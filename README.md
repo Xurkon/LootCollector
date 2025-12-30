@@ -1,5 +1,15 @@
 # LootCollector for Project Ascension (Bronzebeard)
 
+[![Documentation](https://img.shields.io/badge/📖_Docs-GitHub_Pages-2ea44f?style=for-the-badge)](https://xurkon.github.io/LootCollector/)
+![Total Downloads](https://img.shields.io/github/downloads/Xurkon/LootCollector/total?style=for-the-badge&label=TOTAL%20DOWNLOADS&color=e67e22)
+![Latest Release](https://img.shields.io/github/downloads/Xurkon/LootCollector/latest/total?style=for-the-badge&label=LATEST%20RELEASE&color=3498db)
+[![Patreon](https://img.shields.io/badge/Patreon-Support-orange?style=for-the-badge&logo=patreon)](https://patreon.com/Xurkon)
+[![PayPal](https://img.shields.io/badge/PayPal-Donate-blue?style=for-the-badge&logo=paypal)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kancerous@gmail.com)
+
+![Version](https://img.shields.io/badge/version-v0.7.42-blue)
+![WoW Version](https://img.shields.io/badge/WoW-3.3.5a-orange)
+![Project Ascension](https://img.shields.io/badge/Project-Ascension-purple)
+
 > [!IMPORTANT]  
 > **Compatibility Notice:** This addon has been developed and tested specifically for the **Bronzebeard** realm of Project Ascension. Its data-sharing model is designed for static world object spawns (e.g., clickable chests/nodes). On realms where items like Mystic Scrolls drop from random mobs, sharing coordinates is not useful, and this addon may not function as intended.
 
@@ -100,6 +110,17 @@ Additionally, old databases from before version 0.5.1 will likely not work.
 
 **Q: I don't see any tooltip changes with "Enhanced WF Toltip" enabled.**
 **A:** You need AtlasLoot installed and AtlasLoot_Cache enabled for the enhanced tooltips to appear.
+
+## Changelog
+
+See the full [CHANGELOG.md](CHANGELOG.md) for a complete version history.
+
+### Recent Changes (v0.7.42)
+
+- **Toast.lua:** Global function caching, reusable tables, dispatcher idle/wake optimization
+- **Map.lua:** UpdateTicker idle/wake optimization with `wakeDataChangeHandler()` helper
+- **Core.lua & DBSync.lua:** Wake calls at all `L.DataHasChanged = true` locations
+- **v0.7.41:** Fixed tooltip visibility (strata adjustments for pins, overlays, context menus)
 
 ## Contributing
 

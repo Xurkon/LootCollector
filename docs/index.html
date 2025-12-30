@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,13 +17,13 @@
             --border: #30363d;
             --code-bg: #1f2428;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
             background: var(--bg-primary);
@@ -30,14 +31,14 @@
             line-height: 1.6;
             min-height: 100vh;
         }
-        
+
         .hero {
             background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
             border-bottom: 1px solid var(--border);
             padding: 60px 20px;
             text-align: center;
         }
-        
+
         .hero h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
@@ -46,12 +47,12 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .hero .subtitle {
             color: var(--text-secondary);
             font-size: 1.1rem;
         }
-        
+
         .hero .badge {
             display: inline-block;
             background: var(--accent-orange);
@@ -61,13 +62,13 @@
             font-size: 0.85rem;
             margin-top: 15px;
         }
-        
+
         .container {
             max-width: 900px;
             margin: 0 auto;
             padding: 40px 20px;
         }
-        
+
         .section {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -75,19 +76,19 @@
             padding: 30px;
             margin-bottom: 30px;
         }
-        
+
         .section h2 {
             color: var(--accent);
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid var(--border);
         }
-        
+
         .section h3 {
             color: var(--text-primary);
             margin: 20px 0 10px;
         }
-        
+
         .optimization-card {
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -95,31 +96,31 @@
             padding: 20px;
             margin: 15px 0;
         }
-        
+
         .optimization-card h4 {
             color: var(--accent-orange);
             margin-bottom: 10px;
         }
-        
+
         .optimization-card ul {
             list-style: none;
             padding: 0;
         }
-        
+
         .optimization-card li {
             padding: 8px 0;
             padding-left: 20px;
             position: relative;
             color: var(--text-secondary);
         }
-        
+
         .optimization-card li::before {
             content: '✓';
             position: absolute;
             left: 0;
             color: #3fb950;
         }
-        
+
         code {
             background: var(--code-bg);
             padding: 2px 6px;
@@ -128,14 +129,14 @@
             font-size: 0.9em;
             color: var(--accent);
         }
-        
+
         .file-list {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-top: 15px;
         }
-        
+
         .file-item {
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -143,18 +144,18 @@
             padding: 15px;
             text-align: center;
         }
-        
+
         .file-item .filename {
             color: var(--accent);
             font-family: monospace;
         }
-        
+
         .file-item .desc {
             color: var(--text-secondary);
             font-size: 0.85rem;
             margin-top: 5px;
         }
-        
+
         .modified-notice {
             background: linear-gradient(135deg, rgba(230, 126, 34, 0.1) 0%, rgba(88, 166, 255, 0.1) 100%);
             border: 1px solid var(--accent-orange);
@@ -163,12 +164,12 @@
             margin: 30px 0;
             text-align: center;
         }
-        
+
         .modified-notice h3 {
             color: var(--accent-orange);
             margin-bottom: 10px;
         }
-        
+
         .credit {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -177,20 +178,20 @@
             text-align: center;
             margin-top: 30px;
         }
-        
+
         .credit p {
             color: var(--text-secondary);
         }
-        
+
         .credit a {
             color: var(--accent);
             text-decoration: none;
         }
-        
+
         .credit a:hover {
             text-decoration: underline;
         }
-        
+
         footer {
             text-align: center;
             padding: 30px;
@@ -199,32 +200,35 @@
         }
     </style>
 </head>
+
 <body>
     <div class="hero">
         <h1>LootCollector</h1>
         <p class="subtitle">Performance Optimizations Documentation</p>
         <span class="badge">Modified by Xurkon</span>
     </div>
-    
+
     <div class="container">
         <div class="modified-notice">
             <h3>⚡ Modified Version</h3>
-            <p>This version includes performance optimizations by <strong>Xurkon</strong> to reduce CPU usage and improve addon efficiency.</p>
+            <p>This version includes performance optimizations by <strong>Xurkon</strong> to reduce CPU usage and
+                improve addon efficiency.</p>
         </div>
-        
+
         <div class="section">
             <h2>Version 0.7.42 - Performance Optimizations</h2>
-            
+
             <div class="optimization-card">
                 <h4>Toast.lua Optimizations</h4>
                 <ul>
-                    <li>Added global function caching for <code>GetTime</code>, <code>math.*</code>, <code>table.*</code>, <code>string.*</code></li>
+                    <li>Added global function caching for <code>GetTime</code>, <code>math.*</code>,
+                        <code>table.*</code>, <code>string.*</code></li>
                     <li>Replaced per-call table creation in <code>checkQueueForSpam()</code> with reusable table</li>
                     <li>Dispatcher frame now hides when idle and auto-wakes when work is added</li>
                     <li>Reduces CPU usage when no toasts are pending</li>
                 </ul>
             </div>
-            
+
             <div class="optimization-card">
                 <h4>Map.lua Optimizations</h4>
                 <ul>
@@ -233,7 +237,7 @@
                     <li>Auto-wakes when <code>L.DataHasChanged</code> is set to true</li>
                 </ul>
             </div>
-            
+
             <div class="optimization-card">
                 <h4>Core.lua & DBSync.lua</h4>
                 <ul>
@@ -242,7 +246,7 @@
                 </ul>
             </div>
         </div>
-        
+
         <div class="section">
             <h2>Files Modified</h2>
             <div class="file-list">
@@ -264,29 +268,74 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="section">
             <h2>Technical Details</h2>
             <h3>OnUpdate Frame Optimization</h3>
-            <p>The core optimization strategy is to hide frames with OnUpdate handlers when they have no work to do. This prevents the handler from being called every frame (~60 times/second) when idle.</p>
-            
+            <p>The core optimization strategy is to hide frames with OnUpdate handlers when they have no work to do.
+                This prevents the handler from being called every frame (~60 times/second) when idle.</p>
+
             <h3>Pattern Used</h3>
-            <p>Frames start hidden and are shown (awakened) when work is added. When work completes, the frame hides itself again. This is done via:</p>
+            <p>Frames start hidden and are shown (awakened) when work is added. When work completes, the frame hides
+                itself again. This is done via:</p>
             <ul style="margin: 15px 0; padding-left: 20px; color: var(--text-secondary);">
                 <li><code>frame:Hide()</code> when no work pending</li>
-                <li><code>if dispatcher and not dispatcher:IsShown() then dispatcher:Show() end</code> when work is added</li>
+                <li><code>if dispatcher and not dispatcher:IsShown() then dispatcher:Show() end</code> when work is
+                    added</li>
             </ul>
         </div>
-        
+
+        <div class="section">
+            <h2>Changelog</h2>
+
+            <div class="optimization-card">
+                <h4>v0.7.42 - Performance Optimizations</h4>
+                <ul>
+                    <li>Added global function caching for <code>GetTime</code>, <code>math.*</code>,
+                        <code>table.*</code>, <code>string.*</code></li>
+                    <li>Replaced per-call table creation in <code>checkQueueForSpam()</code> with reusable table</li>
+                    <li>Dispatcher frame now hides when idle and auto-wakes when work is added</li>
+                    <li><code>updateTicker</code> frame hides when no data changes pending</li>
+                    <li>Added wake calls at all <code>L.DataHasChanged = true</code> locations</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>v0.7.41 - Frame Strata Fix</h4>
+                <ul>
+                    <li>Fixed Tooltip Visibility: Tooltips now display above map pins and overlays</li>
+                    <li>Changed map pins, overlays, and hover buttons from <code>TOOLTIP</code> to <code>HIGH</code>
+                        strata</li>
+                    <li>Changed context menus and autocomplete dropdowns from <code>TOOLTIP</code> to
+                        <code>DIALOG</code> strata</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>v0.7.40 - Fixes + Small Optimizations</h4>
+                <ul>
+                    <li>Fixed few bugs</li>
+                    <li>Testing alternative solutions and optimizations</li>
+                    <li>Added feature to disable Mystic Scrolls processing</li>
+                    <li>Removed HistoryTab feature</li>
+                </ul>
+            </div>
+
+            <p style="margin-top: 20px; color: var(--text-secondary);">See the full <a
+                    href="https://github.com/Xurkon/LootCollector/blob/performance-tweaks/CHANGELOG.md"
+                    style="color: var(--accent);">CHANGELOG.md</a> for complete version history.</p>
+        </div>
+
         <div class="credit">
             <p>Original addon by <strong>Skulltrail</strong></p>
             <p>Performance optimizations by <strong>Xurkon</strong></p>
             <p><a href="https://github.com/mmobrain/LootCollector">View on GitHub</a></p>
         </div>
     </div>
-    
+
     <footer>
         <p>LootCollector for Project Ascension (Bronzebeard)</p>
     </footer>
 </body>
+
 </html>
