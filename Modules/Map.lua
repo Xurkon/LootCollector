@@ -4,6 +4,18 @@ local L = LootCollector
 local Core = L:GetModule("Core", true)
 local Map = L:NewModule("Map", "AceEvent-3.0")
 
+-- Performance: Cache frequently used globals
+local GetTime = GetTime
+local floor = math.floor
+local abs = math.abs
+local sin = math.sin
+local pi = math.pi
+local format = string.format
+local pairs = pairs
+local ipairs = ipairs
+local type = type
+local tostring = tostring
+
 local PIN_FALLBACK_TEXTURE = "Interface\\AddOns\\LootCollector\\media\\pin"
 local MAP_UPDATE_THROTTLE = 0.4
 
@@ -393,10 +405,29 @@ function Map:EnsureThrottleFrame()
                 Map:DrawWorldMapPins()
                 Map.worldMapUpdatePending = false
                 Map.worldMapUpdateTimer = 0
+                -- Performance: Hide frame when no work pending to stop OnUpdate calls
+                frame:Hide()
             end
+        else
+            -- Performance: Hide if somehow shown with no pending work
+            frame:Hide()
         end
     end)
+    -- Performance: Start hidden, will be shown when update is requested
+    self.throttleFrame:Hide()
 end
+
+-- Performance: Helper to request throttled map update
+function Map:RequestThrottledUpdate()
+    if not self.worldMapUpdatePending then
+        self.worldMapUpdatePending = true
+        self.worldMapUpdateTimer = 0
+        if self.throttleFrame then
+            self.throttleFrame:Show()
+        end
+    end
+end
+
 
 function Map:OnInitialize()
     if L.LEGACY_MODE_ACTIVE then return end
@@ -419,6 +450,7 @@ function Map:OnInitialize()
                 Map.mapSystemReady = true
                 Map.cacheIsDirty = true
                 L.DataHasChanged = true 
+                if Map.wakeDataChangeHandler then Map.wakeDataChangeHandler() end
                 if Map.UpdateMinimap then Map:UpdateMinimap() end
             end
             return true
@@ -438,7 +470,8 @@ function Map:OnInitialize()
 
         if WorldMapFrame and WorldMapFrame:IsShown() then
             Map.cacheIsDirty = true 
-            L.DataHasChanged = true 
+            L.DataHasChanged = true
+            if Map.wakeDataChangeHandler then Map.wakeDataChangeHandler() end
         end
         if WorldMapFrame and WorldMapFrame.viewerOverlayPin then
             WorldMapFrame.viewerOverlayPin:Hide()
@@ -498,9 +531,23 @@ function Map:OnInitialize()
                 Map:DrawWorldMapPins()
                 L.DataHasChanged = false
                 timeSinceLastUpdate = 0
+                -- Performance: Hide when no more data changes pending
+                self:Hide()
             end
+        else
+            -- Performance: Hide if no work to do  
+            self:Hide()
         end
     end)
+    -- Performance: Start hidden, will be shown when data changes
+    updateTicker:Hide()
+    
+    -- Performance: Helper to wake updateTicker when data changes
+    Map.wakeDataChangeHandler = function()
+        if updateTicker and not updateTicker:IsShown() then
+            updateTicker:Show()
+        end
+    end
     
     if WorldMapDetailFrame then
         WorldMapDetailFrame:SetScript("OnMouseDown", function(self, button)
@@ -535,7 +582,8 @@ function Map:OnInitialize()
                 Map._searchResultsFrame:SetPoint("CENTER")
             end
             Map.cacheIsDirty = true
-            L.DataHasChanged = true 
+            L.DataHasChanged = true
+            if Map.wakeDataChangeHandler then Map.wakeDataChangeHandler() end
         end)
         
         hooksecurefunc(WorldMapFrame, "Hide", function()

@@ -339,6 +339,8 @@ function DBSync:ApplyRecord(c, z, i, x4, y4, s, fp_t0, foundBy, q, dt, it, ist, 
         
         
         L.DataHasChanged = true
+        local Map = L:GetModule("Map", true)
+        if Map and Map.wakeDataChangeHandler then Map.wakeDataChangeHandler() end
     else
         if (not existing.il) and il then existing.il = il end
         if (existing.q or 0) == 0 and q and q > 0 then existing.q = q end

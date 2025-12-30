@@ -1,3 +1,26 @@
+## LootCollector 0.7.42 - Performance Optimizations (Xurkon)
+
+### Performance Improvements
+
+- **Toast.lua Optimizations:**
+  - Added global function caching for `GetTime`, `math.*`, `table.*`, `string.*` to reduce lookup overhead
+  - Replaced per-call table creation in `checkQueueForSpam()` with reusable table using `wipe()`
+  - Dispatcher frame now hides when idle (empty queue, no ticker, no anon buffer) and auto-wakes when work is added
+  - This reduces CPU usage when no toasts are pending
+
+- **Map.lua Optimizations:**
+  - `updateTicker` frame now hides when no data changes are pending and auto-wakes when data changes
+  - Added `wakeDataChangeHandler()` helper called from all locations that set `L.DataHasChanged = true`
+
+- **Core.lua & DBSync.lua:**
+  - Added wake calls at all `L.DataHasChanged = true` locations to support the new idle optimization
+
+### Technical Details
+
+These changes reduce CPU usage by preventing OnUpdate handlers from running every frame when there's no work to do. The dispatcher and updateTicker frames now start hidden and only become active when work is added.
+
+---
+
 ## LootCollector 0.7.41 - Frame Strata Fix (Xurkon)
 
 - **Fixed Tooltip Visibility:** Tooltips now display above map pins and overlays instead of behind them

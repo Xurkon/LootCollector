@@ -3,6 +3,26 @@
 local L = LootCollector
 local Toast = L:NewModule("Toast")
 
+-- Performance: Cache frequently used globals
+local GetTime = GetTime
+local floor = math.floor
+local max = math.max
+local min = math.min
+local random = math.random
+local ipairs = ipairs
+local pairs = pairs
+local type = type
+local tostring = tostring
+local tonumber = tonumber
+local wipe = wipe
+local tinsert = table.insert
+local tremove = table.remove
+local tsort = table.sort
+local tconcat = table.concat
+local format = string.format
+local strfind = string.find
+local strlower = string.lower
+
 local TOASTWIDTH, TOASTHEIGHT = 390, 52
 local TICKERHEIGHT = 30
 local VERTICALSPACING = 8
@@ -56,6 +76,9 @@ local spamState = {
 	scanEpoch = 0, 
 	queueTrimEvents = 0, 
 }
+
+-- Performance: Reusable table for spam check to avoid GC churn
+local spamByName = {}
 
 Toast.displayTime = TOASTDISPLAYTIME
 Toast.tickerEnabled = true
@@ -335,26 +358,29 @@ local function checkQueueForSpam()
 	spamState.scanEpoch = (spamState.scanEpoch or 0) + 1
 	local tnow = GetTime()
 	
-	local byName = {}
+	-- Performance: Reuse table instead of creating new one each call
+	wipe(spamByName)
 	for _, entry in ipairs(queue) do
 		local d = entry.data
 		local op = entry.options and entry.options.op or "DISC"
 		local name = d and d.fp
 		if name and name ~= "An Unnamed Collector" then
-			byName[name] = byName[name] or { disctimes = {}, confcount = 0 }
+			if not spamByName[name] then
+				spamByName[name] = { disctimes = {}, confcount = 0 }
+			end
 			if op == "DISC" then
 				local ts = getDiscoveryTimestamp(d)
-				table.insert(byName[name].disctimes, ts)
+				tinsert(spamByName[name].disctimes, ts)
 			elseif op == "CONF" then
-				byName[name].confcount = byName[name].confcount + 1
+				spamByName[name].confcount = spamByName[name].confcount + 1
 			end
 		end
 	end
 	
-	for name, data in pairs(byName) do
+	for name, data in pairs(spamByName) do
 		
 		if not spamState.blocked[name] and #data.disctimes >= DISCSPAMCOUNTTHRESHOLD then
-			table.sort(data.disctimes)
+			tsort(data.disctimes)
 			local span = data.disctimes[#data.disctimes] - data.disctimes[1]
 			if span <= DISCSPAMTIMEWINDOW then
 				
@@ -365,7 +391,7 @@ local function checkQueueForSpam()
 					if spamState.counts[name] >= 2 then
 						
 						spamState.blocked[name] = true
-						LootCollector:Print(string.format("|cffff0000[SPAM ALERT]|r Permanently suppressing toasts from %s (Excessive DISC spam).", name))
+						LootCollector:Print(format("|cffff0000[SPAM ALERT]|r Permanently suppressing toasts from %s (Excessive DISC spam).", name))
 					end
 				end
 			end
@@ -374,9 +400,9 @@ local function checkQueueForSpam()
 		if data.confcount >= CONFSPAMCOUNTTHRESHOLD and tnow >= (spamState.confSuppressed[name] or 0) then
 			
 			spamState.confSuppressed[name] = tnow + CONFSPAMDURATION
-			LootCollector:Print(string.format("|cffffff00[SPAM ALERT]|r Temporarily suppressing CONF toasts from %s for %d minutes (Excessive reinforcements).", name, CONFSPAMDURATION/60))
+			LootCollector:Print(format("|cffffff00[SPAM ALERT]|r Temporarily suppressing CONF toasts from %s for %d minutes (Excessive reinforcements).", name, CONFSPAMDURATION/60))
 			
-			local specialMessage = string.format("|cff00ff00%s|r found many more. Check your map!", name)
+			local specialMessage = format("|cff00ff00%s|r found many more. Check your map!", name)
 			Toast:AddSpecialLine(specialMessage)
 		end
 	end
@@ -731,7 +757,7 @@ local function addToTicker(d, options)
 	local pname = d and (d.fp or d.playerName or d.finder)
 	if pname and spamState.blocked[pname] then return end
 	local line = makeTickerLineFromDiscovery(d, options)
-	table.insert(ticker.messages, line)
+	tinsert(ticker.messages, line)
 	if not ticker.active then
 		ticker.active = true
 		ticker.frame:Show()
@@ -740,21 +766,25 @@ local function addToTicker(d, options)
 		if ticker.fadeL then ticker.fadeL:Show() end
 		if ticker.fadeR then ticker.fadeR:Show() end
 	end
+	-- Performance: Wake dispatcher if hidden (for ticker animation)
+	if dispatcher and not dispatcher:IsShown() then dispatcher:Show() end
 end
 
 local function enqueueToast(d, options)
 	local now = GetTime()
-	local base = math.max(lastScheduledAt, now)
-	local jitter = math.random() * (DELAYMAX - DELAYMIN) + DELAYMIN
+	local base = max(lastScheduledAt, now)
+	local jitter = random() * (DELAYMAX - DELAYMIN) + DELAYMIN
 	local when = base + jitter
-	table.insert(queue, { data = d, fireAt = when, options = options })
+	tinsert(queue, { data = d, fireAt = when, options = options })
 	maybeTrimQueue()
 	checkQueueForSpam()
+	-- Performance: Wake dispatcher if hidden
+	if dispatcher and not dispatcher:IsShown() then dispatcher:Show() end
 end
 
 local function shuffleRange(list, startIdx, endIdx)
 	for i = endIdx, startIdx + 1, -1 do
-		local j = math.random(startIdx, i)
+		local j = random(startIdx, i)
 		list[i], list[j] = list[j], list[i]
 	end
 end
@@ -764,7 +794,7 @@ local function processAnonWindow()
 	if GetTime() < anonWindowEnds then return end
 	anonWindowEnds = nil
 	if #anonBuffer == 0 then return end
-	local take = math.min(#anonBuffer, math.random(ANONMIN, ANONMAX))
+	local take = min(#anonBuffer, random(ANONMIN, ANONMAX))
 	shuffleRange(anonBuffer, 1, take)
 	for i = 1, take do
 		local entry = anonBuffer[i]
@@ -858,10 +888,12 @@ function Toast:Show(discoveryData, force, options)
 	
 	if discoveryData.fp == "An Unnamed Collector" then
 		
-		table.insert(anonBuffer, { data = discoveryData, options = options })
+		tinsert(anonBuffer, { data = discoveryData, options = options })
 		if not anonWindowEnds then
 			anonWindowEnds = GetTime() + ANONGATHERTIME
 		end
+		-- Performance: Wake dispatcher if hidden (for anon window processing)
+		if dispatcher and not dispatcher:IsShown() then dispatcher:Show() end
 	else
 		
 		enqueueToast(discoveryData, options)
@@ -997,7 +1029,7 @@ if L.LEGACY_MODE_ACTIVE then return end
 	ticker.frame:Hide()
 	
 	dispatcher = CreateFrame("Frame")
-	dispatcher:SetScript("OnUpdate", function(_, elapsed)
+	dispatcher:SetScript("OnUpdate", function(self, elapsed)
 		
 		if anonWindowEnds and GetTime() >= anonWindowEnds then
 			processAnonWindow()
@@ -1010,9 +1042,9 @@ if L.LEGACY_MODE_ACTIVE then return end
 		if ticker.active and ticker.sessionBuilt then
 			if not ticker.dtEMA then ticker.dtEMA = elapsed end
 			ticker.dtEMA = ticker.dtEMA * (1 - TICKERDTEMAALPHA) + elapsed * TICKERDTEMAALPHA
-			local dt = math.max(ticker.dtEMA, TICKERDTCLAMP)
-			ticker.easeT = math.min(ticker.easeT + dt, TICKEREASEIN)
-			local easeFactor = math.min(ticker.easeT / TICKEREASEIN, 1.0)
+			local dt = max(ticker.dtEMA, TICKERDTCLAMP)
+			ticker.easeT = min(ticker.easeT + dt, TICKEREASEIN)
+			local easeFactor = min(ticker.easeT / TICKEREASEIN, 1.0)
 			local baseSpeed = Toast.tickerSpeed or TICKERSPEED
 			local speed = baseSpeed * easeFactor
 			ticker.textX = ticker.textX - (speed * dt)
@@ -1027,9 +1059,9 @@ if L.LEGACY_MODE_ACTIVE then return end
 		
 		local maxConcurrent = (overflowActive and MAXCONCURRENTTOASTSWITHTICKER or MAXCONCURRENTTOASTSNORMAL)
 		if visibleCount() < maxConcurrent and #queue > 0 then
-			table.sort(queue, function(a, b) return a.fireAt < b.fireAt end)
+			tsort(queue, function(a, b) return a.fireAt < b.fireAt end)
 			if queue[1] and queue[1].fireAt <= GetTime() then
-				local e = table.remove(queue, 1)
+				local e = tremove(queue, 1)
 				if e and e.data then
 					renderToast(e.data, e.options)
 				end
@@ -1042,7 +1074,22 @@ if L.LEGACY_MODE_ACTIVE then return end
 		elseif nBacklog <= (MAXQUEUEBEFORETICKER - 2) and not ticker.active and not ticker.sessionBuilt then
 			overflowActive = false
 		end
+		
+		-- Performance: Hide dispatcher when completely idle to stop OnUpdate calls
+		local hasWork = (anonWindowEnds ~= nil) or ticker.active or (#queue > 0) or (#anonBuffer > 0)
+		if not hasWork then
+			self:Hide()
+		end
 	end)
+	-- Performance: Start hidden, will be shown when work is added
+	dispatcher:Hide()
+end
+
+-- Performance: Wake dispatcher when work is added
+local function wakeDispatcher()
+	if dispatcher and not dispatcher:IsShown() then
+		dispatcher:Show()
+	end
 end
 
     

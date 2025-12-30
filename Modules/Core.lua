@@ -1366,7 +1366,11 @@ function Core:UpdateItemRecordFromCache(itemID)
 
     if updated then        
 	   local Map = L:GetModule("Map", true)
-		if Map then Map.cacheIsDirty = true end
+		if Map then 
+			Map.cacheIsDirty = true
+			-- Performance: Wake updateTicker if hidden
+			if Map.wakeDataChangeHandler then Map.wakeDataChangeHandler() end
+		end
         
         
         L.DataHasChanged = true
@@ -1779,6 +1783,8 @@ function Core:HandleLocalLoot(discovery)
         
         
         L.DataHasChanged = true
+        local Map = L:GetModule("Map", true)
+        if Map and Map.wakeDataChangeHandler then Map.wakeDataChangeHandler() end
         
         if recordToBroadcast then
             local shouldBeShared = (not recordToBroadcast.vendorItems) or (#recordToBroadcast.vendorItems <= 5)
@@ -1919,6 +1925,8 @@ function Core:HandleLocalLoot(discovery)
     
     
     L.DataHasChanged = true
+    local Map = L:GetModule("Map", true)
+    if Map and Map.wakeDataChangeHandler then Map.wakeDataChangeHandler() end
     
     local norm = {
         i = itemID, il = colored or discovery.il, q = quality or 1,
@@ -2409,6 +2417,8 @@ function Core:AddDiscovery(discoveryData, options)
         
         
         L.DataHasChanged = true
+        local Map = L:GetModule("Map", true)
+        if Map and Map.wakeDataChangeHandler then Map.wakeDataChangeHandler() end
         
         if recordToBroadcast then
             local shouldBeShared = (not recordToBroadcast.vendorItems) or (#recordToBroadcast.vendorItems <= 5)
@@ -2542,8 +2552,9 @@ function Core:AddDiscovery(discoveryData, options)
         end
     end
     
-    
     L.DataHasChanged = true
+    local Map = L:GetModule("Map", true)
+    if Map and Map.wakeDataChangeHandler then Map.wakeDataChangeHandler() end
     
     
     if not options.isNetwork then
