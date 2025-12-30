@@ -1,4 +1,4 @@
-## LootCollector 0.7.42 - Performance Optimizations (Xurkon)
+## LootCollector 0.7.42 - Performance Optimizations
 
 ### Performance Improvements
 
@@ -21,7 +21,7 @@ These changes reduce CPU usage by preventing OnUpdate handlers from running ever
 
 ---
 
-## LootCollector 0.7.41 - Frame Strata Fix (Xurkon)
+## LootCollector 0.7.41 - Frame Strata Fix
 
 - **Fixed Tooltip Visibility:** Tooltips now display above map pins and overlays instead of behind them
   - Changed map pins, overlays, and hover buttons from `TOOLTIP` strata to `HIGH` strata
