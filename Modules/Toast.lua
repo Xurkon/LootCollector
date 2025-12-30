@@ -415,21 +415,21 @@ local function checkQueueForSpam()
 		local isAnonymous = (name == "An Unnamed Collector")
 		if isAnonymous or not name then
 			
-			table.insert(newQueue, entry)
+			newQueue[#newQueue + 1] = entry
 		elseif spamState.blocked[name] then
 			
 			if op == "DISC" then
 				
 			else
 				
-				table.insert(newQueue, entry)
+				newQueue[#newQueue + 1] = entry
 			end
 		elseif op == "CONF" and tnow < (spamState.confSuppressed[name] or 0) then
 			
 			
 		else
 			
-			table.insert(newQueue, entry)
+			newQueue[#newQueue + 1] = entry
 		end
 	end
 	queue = newQueue
@@ -570,14 +570,14 @@ function Toast:acquireToast()
 		f.subtext:SetFont(fnt, (size or 10) + 1, flags or "")
 	end
 	f:Hide()
-	table.insert(toasts, f)
+	toasts[#toasts + 1] = f
 	return f
 end
 
 function Toast:_layoutStacks()
 	local visibles = {}
 	for _, f in ipairs(toasts) do
-		if f:IsShown() then table.insert(visibles, f) end
+		if f:IsShown() then visibles[#visibles + 1] = f end
 	end
 	if #visibles == 0 then
 		bottomMostToast = nil

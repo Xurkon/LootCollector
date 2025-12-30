@@ -39,6 +39,48 @@ local SCAN_MAX_PER_TICK = 300
 local PAUSE_IN_COMBAT   = true
 local PAUSE_WHEN_MOVING = false
 
+-- Performance: Additional cached globals
+local GetTime = GetTime
+local GetFramerate = GetFramerate
+local wipe = wipe
+local tremove = table.remove
+local debugprofilestop = debugprofilestop
+
+-- Performance: Table Pool to reduce GC pressure
+-- Reuses tables instead of creating new ones for frequently allocated short-lived tables
+local _tablePool = {}
+local _tablePoolSize = 0
+local TABLE_POOL_MAX = 50
+
+function Core:AcquireTable()
+    if _tablePoolSize > 0 then
+        local t = _tablePool[_tablePoolSize]
+        _tablePool[_tablePoolSize] = nil
+        _tablePoolSize = _tablePoolSize - 1
+        return t
+    end
+    return {}
+end
+
+function Core:ReleaseTable(t)
+    if t and type(t) == "table" and _tablePoolSize < TABLE_POOL_MAX then
+        wipe(t)
+        _tablePoolSize = _tablePoolSize + 1
+        _tablePool[_tablePoolSize] = t
+    end
+end
+
+-- Performance: Adaptive time budget based on current FPS
+-- Returns milliseconds to spend on processing per frame
+function Core:GetAdaptiveTimeBudget()
+    local fps = GetFramerate and GetFramerate() or 60
+    if fps < 20 then return 1.0 end   -- Very low FPS, minimal work
+    if fps < 30 then return 1.5 end   -- Low FPS, reduce work
+    if fps < 45 then return 2.5 end   -- Medium FPS
+    if fps < 60 then return 3.5 end   -- Good FPS
+    return 5.0                         -- High FPS, can do more work
+end
+
 local function ScheduleAfter(seconds, func)
     if C_Timer and C_Timer.After then
         return C_Timer.After(seconds, func)

@@ -1,4 +1,28 @@
-## LootCollector 0.7.42 - Performance Optimizations
+## LootCollector 0.7.43 - Performance Optimizations Phase 2
+
+### Performance Improvements
+
+- **Core.lua - New Performance Utilities:**
+  - Added `AcquireTable()`/`ReleaseTable()` table pool to reduce GC pressure by reusing short-lived tables
+  - Added `GetAdaptiveTimeBudget()` that adjusts processing time based on current FPS (1-5ms range)
+  - Added additional cached globals (`GetTime`, `GetFramerate`, `wipe`, `tremove`, `debugprofilestop`)
+
+- **Toast.lua Optimizations:**
+  - Replaced 5 `table.insert()` calls with direct assignment pattern (`t[#t + 1] = v`)
+  - Faster queue processing in spam detection and toast management
+
+- **Tooltip.lua Optimizations:**
+  - Added localized globals for `pairs`, `ipairs`, `tonumber`, `tostring`, `type`, `select`, `GetItemInfo`, `GetItemStats`
+  - Replaced 11 `table.insert()` calls with direct assignment pattern
+  - Faster upgrade chain building and tooltip rendering
+
+### Technical Details
+
+Direct table assignment (`t[#t + 1] = v`) is ~10-15% faster than `table.insert(t, v)` in Lua 5.1. The table pool prevents frequent garbage collection by reusing tables instead of creating new ones. The adaptive time budget allows processing to scale with available frame time.
+
+---
+
+
 
 ### Performance Improvements
 

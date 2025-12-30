@@ -3,6 +3,14 @@
 local L = LootCollector
 local Tooltip = L:NewModule("Tooltip", "AceEvent-3.0")
 
+-- Performance: Localized globals
+local pairs, ipairs = pairs, ipairs
+local tonumber, tostring = tonumber, tostring
+local type = type
+local select = select
+local GetItemInfo = GetItemInfo
+local GetItemStats = GetItemStats
+
 local addonName = "ItemUpgradeTooltip"
 local printPrefix = "|cff33ff99ItemUpgradeTooltip:|r "
 
@@ -272,7 +280,7 @@ local function GetItemInfoAndEffects(link)
 
             if not isStandardStat then
                 DebugPrint(">>> - effect:", cleanLine)
-                table.insert(effectLines, cleanLine)
+                effectLines[#effectLines + 1] = cleanLine
             end
         end
     end
@@ -285,7 +293,7 @@ end
 local function BuildTierHeader(upgradeChain)
     local tiers = {}
     for _, upgrade in ipairs(upgradeChain) do
-        table.insert(tiers, upgrade.tierShort)
+        tiers[#tiers + 1] = upgrade.tierShort
     end
     return "Upgrades: " .. table.concat(tiers, ", ")
 end
@@ -296,15 +304,15 @@ local function BuildStatLine(statName, upgradeChain)
 
     for _, upgrade in ipairs(upgradeChain) do
         if upgrade.placeholder then
-            table.insert(values, "|cff888888?|r")
+            values[#values + 1] = "|cff888888?|r"
         else
             local value = upgrade.stats[statName]
             if value then
                 local color = GetQualityColor(upgrade.quality)
-                table.insert(values, color .. (value > 0 and "+" or "") .. value .. "|r")
+                values[#values + 1] = color .. (value > 0 and "+" or "") .. value .. "|r"
                 hasAnyValue = true
             else
-                table.insert(values, "|cff666666-|r")
+                values[#values + 1] = "|cff666666-|r"
             end
         end
     end
@@ -387,7 +395,7 @@ local function AddUpgradeInfo(tooltip, upgradeChain)
                                     for num in targetEffect:gmatch("%d+") do
                                         if combinedValues[numIndex] then
                                             local color = GetQualityColor(targetUpgrade.quality)
-                                            table.insert(combinedValues[numIndex], { val = num, color = color })
+                                            combinedValues[numIndex][#combinedValues[numIndex] + 1] = { val = num, color = color }
                                             numIndex = numIndex + 1
                                         end
                                     end
@@ -398,7 +406,7 @@ local function AddUpgradeInfo(tooltip, upgradeChain)
                         end
                         if not foundMatch then
                             for k = 1, numPlaceholders do
-                                table.insert(combinedValues[k], { val = "-", color = "|cff666666" })
+                                combinedValues[k][#combinedValues[k] + 1] = { val = "-", color = "|cff666666" }
                             end
                         end
                     end
@@ -420,13 +428,13 @@ local function AddUpgradeInfo(tooltip, upgradeChain)
                         end
 
                         if allSame then
-                            table.insert(mergedNumbers, combinedValues[k][1].val)
+                            mergedNumbers[#mergedNumbers + 1] = combinedValues[k][1].val
                         else
                             local coloredVals = {}
                             for _, entry in ipairs(combinedValues[k]) do
-                                table.insert(coloredVals, entry.color .. entry.val .. "|r")
+                                coloredVals[#coloredVals + 1] = entry.color .. entry.val .. "|r"
                             end
-                            table.insert(mergedNumbers, table.concat(coloredVals, "|cFFFFFFFF/|r"))
+                            mergedNumbers[#mergedNumbers + 1] = table.concat(coloredVals, "|cFFFFFFFF/|r")
                         end
                     end
 
@@ -520,7 +528,7 @@ local function BuildUpgradeChain(baseItemID)
                 entry.effects = effectLines
                 entry.placeholder = false
             end
-            table.insert(newChain, entry)
+            newChain[#newChain + 1] = entry
         end
     end
 
