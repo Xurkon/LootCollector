@@ -411,7 +411,8 @@
 
             <p style="margin-top: 20px; color: var(--text-secondary);"><strong>Note:</strong>
                 <code>GetAddOnMemoryUsage()</code> returns 0 on Ascension 3.3.5a client due to disabled memory
-                profiling. Use GC and FPS tests instead.</p>
+                profiling. Use GC and FPS tests instead.
+            </p>
         </div>
 
         <div class="section">
@@ -465,6 +466,120 @@
             <p style="margin-top: 20px; color: var(--text-secondary);">See the full <a
                     href="https://github.com/Xurkon/LootCollector/blob/performance-tweaks/CHANGELOG.md"
                     style="color: var(--accent);">CHANGELOG.md</a> for complete version history.</p>
+        </div>
+
+        <div class="section">
+            <h2>🚀 Future Optimizations</h2>
+            <p style="margin-bottom: 20px; color: var(--text-secondary);">Potential improvements that could be
+                implemented in future versions.</p>
+
+            <div class="optimization-card">
+                <h4>Spatial Hashing for Minimap Pins</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Faster distance
+                    calculations when many pins are visible. Currently O(n) for each update, could be O(1) average.</p>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> High - especially
+                    in zones with 50+ discoveries</p>
+                <p style="color: var(--text-secondary);"><strong>Implementation:</strong></p>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>local GRID_SIZE = 0.05  -- ~5% of zone width
+local function GetGridKey(x, y)
+    return floor(x / GRID_SIZE) .. ":" .. floor(y / GRID_SIZE)
+end
+-- Only check pins in player's grid cell + adjacent cells</code></pre>
+            </div>
+
+            <div class="optimization-card">
+                <h4>Lazy Viewer Row Creation</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Faster addon
+                    load time by delaying row frame creation until viewer is opened.</p>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> Medium - reduces
+                    initial memory footprint by ~50 frames</p>
+                <p style="color: var(--text-secondary);"><strong>Implementation:</strong></p>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>-- Create only visible rows initially
+-- Pool hidden rows for reuse when scrolling
+-- Delay secondary frame creation until viewer first opened
+local rowPool = {}
+function Viewer:AcquireRow()
+    return tremove(rowPool) or CreateRow()
+end</code></pre>
+            </div>
+
+            <div class="optimization-card">
+                <h4>String Interning for Item Links</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Reduced memory
+                    usage by deduplicating repeated item link strings.</p>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> Low-Medium -
+                    saves ~20-50 bytes per duplicate link</p>
+                <p style="color: var(--text-secondary);"><strong>Implementation:</strong></p>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>local linkIntern = setmetatable({}, {__mode = "v"})
+local function InternLink(link)
+    if not link then return nil end
+    local cached = linkIntern[link]
+    if cached then return cached end
+    linkIntern[link] = link
+    return link
+end</code></pre>
+            </div>
+
+            <div class="optimization-card">
+                <h4>Event Coalescing for Map Updates</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Prevents
+                    multiple rapid map redraws by batching updates within a time window.</p>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> Medium - prevents
+                    duplicate work during bulk operations</p>
+                <p style="color: var(--text-secondary);"><strong>Implementation:</strong></p>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>local pendingMapUpdate = false
+function Map:DeferredUpdate()
+    if pendingMapUpdate then return end
+    pendingMapUpdate = true
+    C_Timer.After(0.1, function()
+        pendingMapUpdate = false
+        Map:Update()
+    end)
+end</code></pre>
+            </div>
+
+            <div class="optimization-card">
+                <h4>Batch Processing with Coroutines</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Spread heavy
+                    operations across multiple frames to prevent freezing.</p>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> High - critical
+                    for large database operations</p>
+                <p style="color: var(--text-secondary);"><strong>Implementation:</strong></p>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>local function ProcessInChunks(items, processor, chunkSize)
+    local co = coroutine.create(function()
+        for i, item in ipairs(items) do
+            processor(item)
+            if i % chunkSize == 0 then
+                coroutine.yield()
+            end
+        end
+    end)
+    -- Resume each frame via OnUpdate
+end</code></pre>
+            </div>
+
+            <div class="optimization-card">
+                <h4>Weak Table Caching for Tooltips</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Auto-clearing
+                    cache that doesn't prevent garbage collection of unused entries.</p>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> Low - minor
+                    memory optimization</p>
+                <p style="color: var(--text-secondary);"><strong>Implementation:</strong></p>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>-- Weak values allow GC to collect unused entries
+local tooltipCache = setmetatable({}, {__mode = "v"})
+function GetCachedTooltipData(itemID)
+    if tooltipCache[itemID] then return tooltipCache[itemID] end
+    local data = BuildTooltipData(itemID)
+    tooltipCache[itemID] = data
+    return data
+end</code></pre>
+            </div>
         </div>
 
         <div class="credit">
