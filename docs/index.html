@@ -226,7 +226,8 @@
                     <li>Added <code>Core:GetAdaptiveTimeBudget()</code> that adjusts processing time based on FPS
                         (1-5ms)</li>
                     <li>Added cached globals: <code>GetTime</code>, <code>GetFramerate</code>, <code>wipe</code>,
-                        <code>tremove</code>, <code>debugprofilestop</code></li>
+                        <code>tremove</code>, <code>debugprofilestop</code>
+                    </li>
                 </ul>
             </div>
 
@@ -243,7 +244,8 @@
                 <ul>
                     <li>Added localized globals: <code>pairs</code>, <code>ipairs</code>, <code>tonumber</code>,
                         <code>tostring</code>, <code>type</code>, <code>select</code>, <code>GetItemInfo</code>,
-                        <code>GetItemStats</code></li>
+                        <code>GetItemStats</code>
+                    </li>
                     <li>Replaced 11 <code>table.insert()</code> calls with direct assignment pattern</li>
                     <li>Faster upgrade chain building and tooltip rendering</li>
                 </ul>
@@ -252,7 +254,8 @@
             <h3>Technical Details</h3>
             <p>Direct table assignment (<code>t[#t + 1] = v</code>) is ~10-15% faster than
                 <code>table.insert(t, v)</code> in Lua 5.1. The table pool prevents frequent garbage collection by
-                reusing tables instead of creating new ones.</p>
+                reusing tables instead of creating new ones.
+            </p>
         </div>
 
         <div class="section">
@@ -324,6 +327,91 @@
                 <li><code>if dispatcher and not dispatcher:IsShown() then dispatcher:Show() end</code> when work is
                     added</li>
             </ul>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Testing & Verification</h2>
+            <p style="margin-bottom: 20px; color: var(--text-secondary);">Use these in-game commands to verify the
+                optimizations are working correctly.</p>
+
+            <div class="optimization-card">
+                <h4>Table Pool Verification</h4>
+                <ul>
+                    <li>Check if pool functions exist:</li>
+                </ul>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>/script print(type(LootCollector:GetModule("Core").AcquireTable) == "function" and "Pool OK" or "Missing")</code></pre>
+                <ul>
+                    <li>Test table acquisition and release:</li>
+                </ul>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>/script local C = LootCollector:GetModule("Core"); local t = C:AcquireTable(); t.test = 1; C:ReleaseTable(t); print("Pool cycle OK")</code></pre>
+            </div>
+
+            <div class="optimization-card">
+                <h4>Adaptive Time Budget</h4>
+                <ul>
+                    <li>Check current budget based on FPS:</li>
+                </ul>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>/script print("Budget: " .. LootCollector:GetModule("Core"):GetAdaptiveTimeBudget() .. "ms @ " .. floor(GetFramerate()) .. " FPS")</code></pre>
+                <ul>
+                    <li>Expected values: 1ms (&lt;20 FPS), 1.5ms (&lt;30), 2.5ms (&lt;45), 3.5ms (&lt;60), 5ms (≥60)
+                    </li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>FPS Monitoring</h4>
+                <ul>
+                    <li>Check current FPS:</li>
+                </ul>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>/script print("FPS: " .. floor(GetFramerate()))</code></pre>
+                <ul>
+                    <li>Compare FPS in these scenarios before/after optimizations:
+                        <ul style="margin-top: 8px;">
+                            <li>Zone with many minimap pins visible</li>
+                            <li>World Map open with 100+ discoveries</li>
+                            <li>Receiving multiple discovery toasts rapidly</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>GC Pressure Test</h4>
+                <ul>
+                    <li>Measure garbage collection delta:</li>
+                </ul>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>/script collectgarbage("collect"); local b = collectgarbage("count"); for i=1,1000 do local t = {} end; print(format("GC delta: %.2f KB", collectgarbage("count") - b))</code></pre>
+            </div>
+
+            <div class="optimization-card">
+                <h4>Direct Assignment Timing</h4>
+                <ul>
+                    <li>Benchmark table.insert vs direct assignment:</li>
+                </ul>
+                <pre
+                    style="background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0;"><code>/script local s = debugprofilestop(); for i=1,10000 do local t = {1,2,3}; t[#t+1] = 4 end; print(format("Direct: %.2f ms", debugprofilestop() - s))</code></pre>
+            </div>
+
+            <div class="optimization-card">
+                <h4>Practical Testing Checklist</h4>
+                <ul>
+                    <li>Load addon and verify no Lua errors</li>
+                    <li>Open/close World Map multiple times</li>
+                    <li>Receive several discovery toasts</li>
+                    <li>Open Viewer and scroll through items</li>
+                    <li>Watch for FPS drops during heavy activity</li>
+                    <li>Monitor for micro-stutters (reduced with table pool)</li>
+                </ul>
+            </div>
+
+            <p style="margin-top: 20px; color: var(--text-secondary);"><strong>Note:</strong>
+                <code>GetAddOnMemoryUsage()</code> returns 0 on Ascension 3.3.5a client due to disabled memory
+                profiling. Use GC and FPS tests instead.</p>
         </div>
 
         <div class="section">
