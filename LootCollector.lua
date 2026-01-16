@@ -454,7 +454,7 @@ local collectedCacheTime = {}
 local CACHE_DURATION = 300
 
 function LootCollector:IsItemCollected(itemID)
-    if not itemID then return false end
+    if not itemID or itemID == 0 then return false end
     
     local now = GetTime()
     if collectedCacheTime[itemID] and (now - collectedCacheTime[itemID]) < CACHE_DURATION then
@@ -464,23 +464,41 @@ function LootCollector:IsItemCollected(itemID)
     local tooltip = _G["LootCollectorCollectedTooltip"]
     if not tooltip then
         tooltip = CreateFrame("GameTooltip", "LootCollectorCollectedTooltip", UIParent, "GameTooltipTemplate")
-        tooltip:SetOwner(UIParent, "ANCHOR_NONE")
     end
     
+    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
     tooltip:ClearLines()
-    tooltip:SetHyperlink("item:" .. itemID)
+    
+    local success, err = pcall(function()
+        tooltip:SetHyperlink("item:" .. itemID)
+    end)
+    
+    if not success then
+        collectedCache[itemID] = false
+        collectedCacheTime[itemID] = now
+        return false
+    end
+    
+    local numLines = tooltip:NumLines()
+    if numLines == 0 then
+        collectedCache[itemID] = false
+        collectedCacheTime[itemID] = now
+        return false
+    end
     
     local isCollected = false
-    for i = 1, tooltip:NumLines() do
+    for i = 1, numLines do
         local line = _G["LootCollectorCollectedTooltipTextLeft" .. i]
         if line then
             local text = line:GetText()
-            if text and text:find("Collected") then
+            if text and type(text) == "string" and text == "Collected" then
                 isCollected = true
                 break
             end
         end
     end
+    
+    tooltip:Hide()
     
     collectedCache[itemID] = isCollected
     collectedCacheTime[itemID] = now
