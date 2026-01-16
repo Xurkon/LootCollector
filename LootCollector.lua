@@ -521,17 +521,6 @@ function LootCollector:IsLootedByChar(guid, discoveryData)
                 return true
             end
         end
-        
-        if Constants and discoveryData.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL and discoveryData.i then
-            if self:IsItemCollected(discoveryData.i) then
-                self.db.char.lootedByItemZone = self.db.char.lootedByItemZone or {}
-                local itemZoneKey = tostring(discoveryData.i or 0) .. "-" .. tostring(discoveryData.z or 0)
-                if not self.db.char.lootedByItemZone[itemZoneKey] then
-                    self.db.char.lootedByItemZone[itemZoneKey] = time()
-                end
-                return true
-            end
-        end
     end
     
     return false
