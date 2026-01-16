@@ -600,7 +600,6 @@ function Core:PurgeEmbossedScrolls()
         end
     end
 end
-
 function Core:MigrateLootedMysticScrolls(zoneID)
     if not (L.db and L.db.char and L.db.char.looted) then return end
     
@@ -611,27 +610,57 @@ function Core:MigrateLootedMysticScrolls(zoneID)
     if not discoveries then return end
     
     L.db.char.lootedByItemZone = L.db.char.lootedByItemZone or {}
+    
+    local lootedItemZones = {}
+    local checkedCount = 0
     local migratedCount = 0
     
     for guid, lootedTime in pairs(L.db.char.looted) do
         local d = discoveries[guid]
-        if d and d.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL then
-            if not zoneID or tonumber(d.z) == tonumber(zoneID) then
+        if d then
+            local isMysticScroll = d.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL
+            if not isMysticScroll and d.il then
+                isMysticScroll = string.find(d.il, "Mystic Scroll", 1, true) ~= nil
+            end
+            
+            if isMysticScroll then
                 local itemZoneKey = tostring(d.i or 0) .. "-" .. tostring(d.z or 0)
-                if not L.db.char.lootedByItemZone[itemZoneKey] then
-                    L.db.char.lootedByItemZone[itemZoneKey] = lootedTime
-                    migratedCount = migratedCount + 1
+                if not lootedItemZones[itemZoneKey] then
+                    lootedItemZones[itemZoneKey] = lootedTime
+                    checkedCount = checkedCount + 1
+                end
+            end
+        end
+    end
+    
+    for guid, d in pairs(discoveries) do
+        if d then
+            local isMysticScroll = d.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL
+            if not isMysticScroll and d.il then
+                isMysticScroll = string.find(d.il, "Mystic Scroll", 1, true) ~= nil
+            end
+            
+            if isMysticScroll then
+                if not zoneID or tonumber(d.z) == tonumber(zoneID) then
+                    local itemZoneKey = tostring(d.i or 0) .. "-" .. tostring(d.z or 0)
+                    if lootedItemZones[itemZoneKey] and not L.db.char.lootedByItemZone[itemZoneKey] then
+                        L.db.char.lootedByItemZone[itemZoneKey] = lootedItemZones[itemZoneKey]
+                        migratedCount = migratedCount + 1
+                    end
                 end
             end
         end
     end
     
     if migratedCount > 0 then
-        L._debug("Core-Migration", string.format("Backfilled %d Mystic Scroll entries to lootedByItemZone%s", migratedCount, zoneID and (" for zone " .. zoneID) or ""))
+        print(string.format("|cff00ff00LootCollector:|r Marked %d Mystic Scrolls as looted (same itemID-zone as previously collected).", migratedCount))
         
         local Map = L:GetModule("Map", true)
         if Map then
             Map.cacheIsDirty = true
+            if Map.Update and WorldMapFrame and WorldMapFrame:IsShown() then
+                Map:Update()
+            end
             if Map.UpdateMinimap then Map:UpdateMinimap() end
         end
     end
