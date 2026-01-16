@@ -419,6 +419,26 @@
             <h2>Changelog</h2>
 
             <div class="optimization-card">
+                <h4>v0.7.45 - Mystic Scroll Looted Persistence Fix</h4>
+                <ul>
+                    <li>Fixed: Mystic Scrolls now correctly remain hidden after being looted</li>
+                    <li>Extended dual-key tracking system to Mystic Scrolls (previously only Worldforged)</li>
+                    <li>Looted Mystic Scrolls tracked by both GUID and <code>(itemID, zone)</code> key</li>
+                    <li>Added automatic migration to backfill existing looted Mystic Scrolls</li>
+                    <li>Zone-aware updates: On zone change, re-checks for looted scrolls to hide</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>v0.7.44 - Worldforged Loot Persistence Fix</h4>
+                <ul>
+                    <li>Fixed: Worldforged items now correctly remain hidden after being looted</li>
+                    <li>Looted Worldforged items tracked by both GUID and <code>(itemID, zone)</code> key</li>
+                    <li>This ensures looted state persists when same item appears at new spawn location</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
                 <h4>v0.7.43 - Performance Optimizations Phase 2</h4>
                 <ul>
                     <li>Added <code>AcquireTable()</code>/<code>ReleaseTable()</code> table pool for GC reduction</li>
