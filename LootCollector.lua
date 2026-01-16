@@ -449,6 +449,45 @@ function LootCollector:GetDiscoveryStatus(d)
     return STATUS_UNCONFIRMED
 end
 
+local collectedCache = {}
+local collectedCacheTime = {}
+local CACHE_DURATION = 300
+
+function LootCollector:IsItemCollected(itemID)
+    if not itemID then return false end
+    
+    local now = GetTime()
+    if collectedCacheTime[itemID] and (now - collectedCacheTime[itemID]) < CACHE_DURATION then
+        return collectedCache[itemID]
+    end
+    
+    local tooltip = _G["LootCollectorCollectedTooltip"]
+    if not tooltip then
+        tooltip = CreateFrame("GameTooltip", "LootCollectorCollectedTooltip", UIParent, "GameTooltipTemplate")
+        tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+    end
+    
+    tooltip:ClearLines()
+    tooltip:SetHyperlink("item:" .. itemID)
+    
+    local isCollected = false
+    for i = 1, tooltip:NumLines() do
+        local line = _G["LootCollectorCollectedTooltipTextLeft" .. i]
+        if line then
+            local text = line:GetText()
+            if text and text:find("Collected") then
+                isCollected = true
+                break
+            end
+        end
+    end
+    
+    collectedCache[itemID] = isCollected
+    collectedCacheTime[itemID] = now
+    
+    return isCollected
+end
+
 function LootCollector:IsLootedByChar(guid, discoveryData)
     if not (self.db and self.db.char) then return false end
     
@@ -461,6 +500,17 @@ function LootCollector:IsLootedByChar(guid, discoveryData)
         if Constants and (discoveryData.dt == Constants.DISCOVERY_TYPE.WORLDFORGED or discoveryData.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL) then
             local itemZoneKey = tostring(discoveryData.i or 0) .. "-" .. tostring(discoveryData.z or 0)
             if self.db.char.lootedByItemZone and self.db.char.lootedByItemZone[itemZoneKey] then
+                return true
+            end
+        end
+        
+        if Constants and discoveryData.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL and discoveryData.i then
+            if self:IsItemCollected(discoveryData.i) then
+                self.db.char.lootedByItemZone = self.db.char.lootedByItemZone or {}
+                local itemZoneKey = tostring(discoveryData.i or 0) .. "-" .. tostring(discoveryData.z or 0)
+                if not self.db.char.lootedByItemZone[itemZoneKey] then
+                    self.db.char.lootedByItemZone[itemZoneKey] = time()
+                end
                 return true
             end
         end
