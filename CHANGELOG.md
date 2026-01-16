@@ -7,10 +7,12 @@
   - Looted Mystic Scrolls are now tracked by both GUID and `(itemID, zone)` key
   - This ensures the looted state persists when the same scroll appears at a new spawn location
   - Affects `IsLootedByChar`, `ToggleLootedState`, and manual "Set as looted/unlooted" menu options
+  - **Migration:** Existing looted Mystic Scrolls are automatically backfilled to the new tracking system
+  - **Zone-aware updates:** On zone change, the addon re-checks for any looted scrolls that need to be hidden
 
 ### Technical Details
 
-Mystic Scrolls, like Worldforged items, are unique per zone. The previous implementation only tracked Mystic Scrolls by GUID, which includes coordinates. When another player found the same scroll at a different location, a new GUID was generated, causing the scroll to reappear. The fix extends the `lootedByItemZone` tracking mechanism to Mystic Scrolls.
+Mystic Scrolls, like Worldforged items, are unique per zone. The previous implementation only tracked Mystic Scrolls by GUID, which includes coordinates. When another player found the same scroll at a different location, a new GUID was generated, causing the scroll to reappear. The fix extends the `lootedByItemZone` tracking mechanism to Mystic Scrolls and includes a migration function that runs on login (full scan) and on zone change (zone-specific scan).
 
 ---
 

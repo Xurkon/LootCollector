@@ -499,6 +499,17 @@ function Map:OnInitialize()
     self:RegisterEvent("ZONE_CHANGED_NEW_AREA", function()
         self.mapSystemReady = false
         CheckMapReadiness()
+        
+        local Core = L:GetModule("Core", true)
+        if Core and Core.MigrateLootedMysticScrolls then
+            local ZoneList = L:GetModule("ZoneList", true)
+            local currentZoneID = ZoneList and ZoneList:GetCurrentMapID()
+            if currentZoneID then
+                C_Timer.After(1, function()
+                    Core:MigrateLootedMysticScrolls(currentZoneID)
+                end)
+            end
+        end
     end)
         
     self:EnsureFilterUI()

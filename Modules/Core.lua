@@ -601,6 +601,42 @@ function Core:PurgeEmbossedScrolls()
     end
 end
 
+function Core:MigrateLootedMysticScrolls(zoneID)
+    if not (L.db and L.db.char and L.db.char.looted) then return end
+    
+    local Constants = L:GetModule("Constants", true)
+    if not Constants then return end
+    
+    local discoveries = L:GetDiscoveriesDB()
+    if not discoveries then return end
+    
+    L.db.char.lootedByItemZone = L.db.char.lootedByItemZone or {}
+    local migratedCount = 0
+    
+    for guid, lootedTime in pairs(L.db.char.looted) do
+        local d = discoveries[guid]
+        if d and d.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL then
+            if not zoneID or tonumber(d.z) == tonumber(zoneID) then
+                local itemZoneKey = tostring(d.i or 0) .. "-" .. tostring(d.z or 0)
+                if not L.db.char.lootedByItemZone[itemZoneKey] then
+                    L.db.char.lootedByItemZone[itemZoneKey] = lootedTime
+                    migratedCount = migratedCount + 1
+                end
+            end
+        end
+    end
+    
+    if migratedCount > 0 then
+        L._debug("Core-Migration", string.format("Backfilled %d Mystic Scroll entries to lootedByItemZone%s", migratedCount, zoneID and (" for zone " .. zoneID) or ""))
+        
+        local Map = L:GetModule("Map", true)
+        if Map then
+            Map.cacheIsDirty = true
+            if Map.UpdateMinimap then Map:UpdateMinimap() end
+        end
+    end
+end
+
 function Core:PurgeAllIgnoredItems()
     local discoveries = L:GetDiscoveriesDB()
     if not discoveries then return 0 end
@@ -1689,6 +1725,7 @@ function Core:OnInitialize()
 	    Core:FixIncorrectInstanceContinentIDs()
         Core:ConvertLegacyInstanceData() 
         Core:PurgeEmbossedScrolls()
+        Core:MigrateLootedMysticScrolls()
         Core:PerformOnLoginMaintenance()
         Core:RebuildZoneIndex()
         Core:ScanDatabaseForUncachedItems()
