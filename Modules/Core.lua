@@ -1749,6 +1749,29 @@ function Core:OnInitialize()
              print("|cffff7f00LootCollector:|r Core module not available.")
         end
     end
+    
+    SLASH_LOOTCOLLECTORMSDIAG1 = "/lcmsdiag"
+    SlashCmdList["LOOTCOLLECTORMSDIAG"] = function()
+        local db = L:GetDiscoveriesDB()
+        local found = false
+        for guid in pairs(L.db.char.looted) do
+            local d = db[guid]
+            if d and d.il and d.il:find("Mystic Scroll") then
+                print("|cff00ff00=== Looted MS Diagnostic ===|r")
+                print("GUID:", guid)
+                print("ItemID:", d.i, "Zone:", d.z, "dt:", d.dt)
+                local key = tostring(d.i or 0).."-"..tostring(d.z or 0)
+                print("ItemZoneKey:", key)
+                print("In lootedByItemZone:", L.db.char.lootedByItemZone[key] and "YES" or "NO")
+                print("IsLootedByChar:", L:IsLootedByChar(guid, d) and "YES" or "NO")
+                found = true
+                break
+            end
+        end
+        if not found then
+            print("|cffff7f00LootCollector:|r No looted Mystic Scrolls found in discoveries DB")
+        end
+    end
 
     ScheduleAfter(8, function()
 	    Core:FixIncorrectInstanceContinentIDs()
