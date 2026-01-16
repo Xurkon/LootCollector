@@ -1771,6 +1771,17 @@ function Core:OnInitialize()
         if not found then
             print("|cffff7f00LootCollector:|r No looted Mystic Scrolls found in discoveries DB")
         end
+    end    
+    SLASH_LOOTCOLLECTORCLEARIZ1 = "/lccleariz"
+    SlashCmdList["LOOTCOLLECTORCLEARIZ"] = function()
+        if L.db and L.db.char then
+            local count = 0
+            if L.db.char.lootedByItemZone then
+                for k in pairs(L.db.char.lootedByItemZone) do count = count + 1 end
+            end
+            L.db.char.lootedByItemZone = {}
+            print(string.format("|cff00ff00LootCollector:|r Cleared %d entries from lootedByItemZone. Reload to see all items.", count))
+        end
     end
 
     ScheduleAfter(8, function()
