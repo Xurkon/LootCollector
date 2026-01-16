@@ -1,4 +1,35 @@
-## LootCollector 0.7.43 - Performance Optimizations Phase 2
+## LootCollector 0.7.45 - Mystic Scroll Looted Persistence Fix
+
+### Bug Fixes
+
+- **Fixed:** Mystic Scrolls (enchants) now correctly remain hidden after being looted, even when other players broadcast them at different locations
+  - Extended the dual-key tracking system (previously only for Worldforged items) to also apply to Mystic Scrolls
+  - Looted Mystic Scrolls are now tracked by both GUID and `(itemID, zone)` key
+  - This ensures the looted state persists when the same scroll appears at a new spawn location
+  - Affects `IsLootedByChar`, `ToggleLootedState`, and manual "Set as looted/unlooted" menu options
+
+### Technical Details
+
+Mystic Scrolls, like Worldforged items, are unique per zone. The previous implementation only tracked Mystic Scrolls by GUID, which includes coordinates. When another player found the same scroll at a different location, a new GUID was generated, causing the scroll to reappear. The fix extends the `lootedByItemZone` tracking mechanism to Mystic Scrolls.
+
+---
+
+## LootCollector 0.7.44 - Worldforged Loot Persistence Fix
+
+### Bug Fixes
+
+- **Fixed:** Worldforged items now correctly remain hidden after being looted, even when other players broadcast them at different locations
+  - Looted Worldforged items are now tracked by both GUID and `(itemID, zone)` key
+  - This ensures the looted state persists when the same item appears at a new spawn location
+  - Affects both automatic loot detection and manual "Set as looted/unlooted" menu options
+
+### Technical Details
+
+Worldforged items are unique per zone (only one of each itemID exists at a time). The previous implementation tracked looted items solely by GUID, which includes coordinates. When another player found the same item at a different location, a new GUID was generated, causing the item to reappear. The fix adds a secondary tracking mechanism by `(itemID, zone)` key for Worldforged items.
+
+---
+
+
 
 ### Performance Improvements
 

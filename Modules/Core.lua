@@ -1959,6 +1959,12 @@ function Core:HandleLocalLoot(discovery)
     L.db.char.looted = L.db.char.looted or {}
     L.db.char.looted[rec.g] = time()
     
+    if dt == Constants.DISCOVERY_TYPE.WORLDFORGED or dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL then
+        L.db.char.lootedByItemZone = L.db.char.lootedByItemZone or {}
+        local itemZoneKey = tostring(itemID) .. "-" .. tostring(z)
+        L.db.char.lootedByItemZone[itemZoneKey] = time()
+    end
+    
     if not self:IsItemCached(itemID) then
         if self.QueueItemForCaching then
             self:QueueItemForCaching(itemID)

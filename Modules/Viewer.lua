@@ -4227,7 +4227,7 @@ function Viewer:UpdateRows()
                 row.inventoryText:SetText(string.format("(%d items)", invCount))
             else
                 
-                local isLooted = self:IsLootedByChar(data.guid)
+                local isLooted = self:IsLootedByChar(data.guid, data)
                 local alpha = isLooted and 0.5 or 1.0
                 local itemName = data.itemName
                 
@@ -4283,7 +4283,7 @@ function Viewer:UpdateRows()
             end
             
             
-            local isLooted = self:IsLootedByChar(data.guid)
+            local isLooted = self:IsLootedByChar(data.guid, data)
             row.lootedBtn:SetEnabled(not isVendorView and not isLooted and not isLoading)
             row.unlootedBtn:SetEnabled(not isVendorView and isLooted and not isLoading)
             row.lootedBtn:SetShown(not isVendorView)
@@ -4375,11 +4375,27 @@ function Viewer:RefreshData()
     VDebug("RefreshData: end, total elapsed=" .. tostring(time() - t0) .. "s")
 end
 
-function Viewer:IsLootedByChar(guid)
-    if not guid or not (L.db and L.db.char and L.db.char.looted) then
+function Viewer:IsLootedByChar(guid, discoveryData)
+    if not guid or not (L.db and L.db.char) then
         return false
     end
-    return L.db.char.looted[guid] and true or false
+    
+    if L.db.char.looted and L.db.char.looted[guid] then
+        return true
+    end
+    
+    if discoveryData then
+        local d = discoveryData.discovery or discoveryData
+        local Constants = L:GetModule("Constants", true)
+        if Constants and (d.dt == Constants.DISCOVERY_TYPE.WORLDFORGED or d.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL) then
+            local itemZoneKey = tostring(d.i or 0) .. "-" .. tostring(d.z or 0)
+            if L.db.char.lootedByItemZone and L.db.char.lootedByItemZone[itemZoneKey] then
+                return true
+            end
+        end
+    end
+    
+    return false
 end
 
 function Viewer:ToggleLootedState(guid, discoveryData)
@@ -4388,20 +4404,34 @@ function Viewer:ToggleLootedState(guid, discoveryData)
     end
 
     L.db.char.looted = L.db.char.looted or {}
-    local isCurrentlyLooted = self:IsLootedByChar(guid)
+    local isCurrentlyLooted = self:IsLootedByChar(guid, discoveryData)
+    
+    local d = discoveryData.discovery or discoveryData
+    local Constants = L:GetModule("Constants", true)
+    local needsItemZoneKey = Constants and (d.dt == Constants.DISCOVERY_TYPE.WORLDFORGED or d.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL)
+    local itemZoneKey = needsItemZoneKey and (tostring(d.i or 0) .. "-" .. tostring(d.z or 0)) or nil
 
     if isCurrentlyLooted then
-        
         L.db.char.looted[guid] = nil
+        
+        if needsItemZoneKey and itemZoneKey then
+            L.db.char.lootedByItemZone = L.db.char.lootedByItemZone or {}
+            L.db.char.lootedByItemZone[itemZoneKey] = nil
+        end
+        
         print(string.format("|cff00ff00LootCollector:|r Marked '%s' as unlooted.",
             discoveryData.itemName or "Unknown Item"))
     else
-        
         L.db.char.looted[guid] = time()
+        
+        if needsItemZoneKey and itemZoneKey then
+            L.db.char.lootedByItemZone = L.db.char.lootedByItemZone or {}
+            L.db.char.lootedByItemZone[itemZoneKey] = time()
+        end
+        
         print(string.format("|cff00ff00LootCollector:|r Marked '%s' as looted.", discoveryData.itemName or "Unknown Item"))
     end
 
-    
     local Map = L:GetModule("Map", true)
     if Map then
         Map.cacheIsDirty = true 
@@ -4413,7 +4443,6 @@ function Viewer:ToggleLootedState(guid, discoveryData)
         end
     end
 
-    
     self:RefreshData()
 
     return not isCurrentlyLooted 

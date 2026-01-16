@@ -167,7 +167,7 @@ local dbDefaults = {
 	    idebugMode = false,
         discoveries = {},
     },
-    char = { looted = {}, hidden = {} },
+    char = { looted = {}, hidden = {}, lootedByItemZone = {} },
     global = { 
         realms = {}, 
         cacheQueue = {},
@@ -449,9 +449,24 @@ function LootCollector:GetDiscoveryStatus(d)
     return STATUS_UNCONFIRMED
 end
 
-function LootCollector:IsLootedByChar(guid)
-    if not (self.db and self.db.char and self.db.char.looted) then return false end
-    return self.db.char.looted[guid] and true or false
+function LootCollector:IsLootedByChar(guid, discoveryData)
+    if not (self.db and self.db.char) then return false end
+    
+    if self.db.char.looted and self.db.char.looted[guid] then
+        return true
+    end
+    
+    if discoveryData then
+        local Constants = self:GetModule("Constants", true)
+        if Constants and (discoveryData.dt == Constants.DISCOVERY_TYPE.WORLDFORGED or discoveryData.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL) then
+            local itemZoneKey = tostring(discoveryData.i or 0) .. "-" .. tostring(discoveryData.z or 0)
+            if self.db.char.lootedByItemZone and self.db.char.lootedByItemZone[itemZoneKey] then
+                return true
+            end
+        end
+    end
+    
+    return false
 end
 
 function LootCollector:DiscoveryPassesFilters(d)
@@ -463,7 +478,7 @@ function LootCollector:DiscoveryPassesFilters(d)
     if (s == STATUS_UNCONFIRMED and f.hideUnconfirmed) or
        (s == STATUS_FADING and f.hideFaded) or
        (s == STATUS_STALE and f.hideStale) or
-       (f.hideLooted and d.g and self:IsLootedByChar(d.g)) then
+       (f.hideLooted and d.g and self:IsLootedByChar(d.g, d)) then
         return false
     end
 

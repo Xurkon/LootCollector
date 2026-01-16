@@ -1328,12 +1328,29 @@ function Map:OpenPinMenu(anchorFrame)
         if not (L.db and L.db.char) then return end
         L.db.char.looted = L.db.char.looted or {}
         L.db.char.looted[d.g] = time()
+        
+        if Constants and (d.dt == Constants.DISCOVERY_TYPE.WORLDFORGED or d.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL) then
+            L.db.char.lootedByItemZone = L.db.char.lootedByItemZone or {}
+            local itemZoneKey = tostring(d.i or 0) .. "-" .. tostring(d.z or 0)
+            L.db.char.lootedByItemZone[itemZoneKey] = time()
+        end
+        
         Map.cacheIsDirty = true 
         Map:Update()
       end })
       table.insert(menuList, { text = "Set as unlooted", notCheckable = true, func = function()
-        if not (L.db and L.db.char and L.db.char.looted) then return end
-        L.db.char.looted[d.g] = nil
+        if not (L.db and L.db.char) then return end
+        if L.db.char.looted then
+            L.db.char.looted[d.g] = nil
+        end
+        
+        if Constants and (d.dt == Constants.DISCOVERY_TYPE.WORLDFORGED or d.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL) then
+            if L.db.char.lootedByItemZone then
+                local itemZoneKey = tostring(d.i or 0) .. "-" .. tostring(d.z or 0)
+                L.db.char.lootedByItemZone[itemZoneKey] = nil
+            end
+        end
+        
         Map.cacheIsDirty = true 
         Map:Update()
       end })
