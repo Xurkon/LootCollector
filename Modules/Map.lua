@@ -502,9 +502,8 @@ function Map:OnInitialize()
         
         local Core = L:GetModule("Core", true)
         if Core and Core.MigrateLootedMysticScrolls then
-            local ZoneList = L:GetModule("ZoneList", true)
-            local currentZoneID = ZoneList and ZoneList:GetCurrentMapID()
-            if currentZoneID then
+            local currentZoneID = GetCurrentMapAreaID and GetCurrentMapAreaID()
+            if currentZoneID and currentZoneID > 0 then
                 C_Timer.After(1, function()
                     Core:MigrateLootedMysticScrolls(currentZoneID)
                 end)
