@@ -1796,6 +1796,7 @@ function Core:OnInitialize()
         local c, mapID, px, py = Map:GetPlayerLocation()
         
         local start1 = debugprofilestop()
+        local totalCount = 0
         for i = 1, iterations do
             local count = 0
             for _, pin in ipairs(Map._mmPins) do
@@ -1803,24 +1804,17 @@ function Core:OnInitialize()
                     count = count + 1
                 end
             end
+            totalCount = count
         end
         local time1 = debugprofilestop() - start1
         
-        local start2 = debugprofilestop()
-        for i = 1, iterations do
-            local pins = Map:GetPinsInPlayerArea(px, py, mapID)
-            local count = #pins
-        end
-        local time2 = debugprofilestop() - start2
-        
         local totalPins = #Map._mmPins
-        local nearbyPins = #Map:GetPinsInPlayerArea(px, py, mapID)
         
         print("|cff00ff00=== LootCollector Benchmark ===|r")
-        print(string.format("Total pins: %d | Nearby pins: %d (%.0f%% reduction)", totalPins, nearbyPins, (1 - nearbyPins/totalPins) * 100))
-        print(string.format("Full iteration (%dx): %.2f ms", iterations, time1/1000))
-        print(string.format("Spatial hashing (%dx): %.2f ms", iterations, time2/1000))
-        print(string.format("Speedup: %.1fx faster", time1/time2))
+        print(string.format("Total minimap pins: %d", totalPins))
+        print(string.format("Pins in current zone: %d", totalCount))
+        print(string.format("Pin iteration (%dx): %.2f ms", iterations, time1/1000))
+        print("|cff888888Note: Spatial hashing was reverted due to bugs|r")
     end
     
     SLASH_LOOTCOLLECTORSTATS1 = "/lcstats"
