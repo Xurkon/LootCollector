@@ -2139,6 +2139,8 @@ function Map:EnsureMinimapTicker()
                  L._mdebug("Map-Ticker", "Forced ticker update (pins dirty).")
             end
 
+            local minimapRadius = Minimap:GetViewRadius()
+            
             for _, pin in ipairs(Map._mmPins) do
                 if pin.discovery then 
                     local d = pin.discovery
@@ -2149,10 +2151,16 @@ function Map:EnsureMinimapTicker()
                             Astrolabe:RemoveIconFromMinimap(pin)
                             pin:Hide()
                         else
-                            local result = Astrolabe:PlaceIconOnMinimap(pin, GetCurrentMapContinent(), GetCurrentMapZone(), d.xy.x, d.xy.y)
+                            local result = Astrolabe:PlaceIconOnMinimap(pin, GetCurrentMapContinent(), mapID, d.xy.x, d.xy.y)
                             if result == 0 then
-                                if not pin:IsShown() then
-                                    pin:Show()
+                                local dist = Astrolabe:GetDistanceToIcon(pin)
+                                if dist and dist > minimapRadius * 1.5 then
+                                    Astrolabe:RemoveIconFromMinimap(pin)
+                                    pin:Hide()
+                                else
+                                    if not pin:IsShown() then
+                                        pin:Show()
+                                    end
                                 end
                             else
                                 Astrolabe:RemoveIconFromMinimap(pin)
