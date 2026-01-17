@@ -2123,7 +2123,7 @@ function Map:EnsureMinimapTicker()
             
             Map._playerStateChanged = true
             Map._minimapPinsDirty = false 
-            Map._mmInterval = 0.033
+            Map._mmInterval = 0.016
 
             state.c, state.mapID, state.px, state.py, state.facing, state.zoom = c, mapID, px, py, facing, currentZoom
 
