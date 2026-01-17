@@ -107,8 +107,7 @@ function Map:RebuildSpatialGrid(mapID)
             end
         end
     end
-    
-    print(string.format("|cff00ff00LootCollector:|r SpatialGrid rebuilt for zone %s with %d pins", tostring(mapID), pinCount))
+
 end
 
 function Map:MarkSpatialGridDirty()
