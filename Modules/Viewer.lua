@@ -220,19 +220,14 @@ local Cache = {
     discoveriesBuilt = false,
     discoveriesBuilding = false,
 
-    
-    itemInfo = {},
+    itemInfo = setmetatable({}, {__mode = "v"}),
 
-    
-    characterClass = {},
+    characterClass = setmetatable({}, {__mode = "v"}),
 
-    
-    worldforged = {},
+    worldforged = setmetatable({}, {__mode = "v"}),
 
-    
-    zoneNames = {},
+    zoneNames = setmetatable({}, {__mode = "v"}),
 
-    
     uniqueValues = {
         slot = {},
         type = {},
@@ -241,14 +236,11 @@ local Cache = {
     },
     uniqueValuesValid = false,
 
-    
     filteredResults = {},
     lastFilterState = nil,
 
-    
     duplicateItems = {},
 
-    
     _cleanupRequired = false,
 }
 
