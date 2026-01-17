@@ -5073,4 +5073,9 @@ SlashCmdList["LootCollectorVIEWER"] = function(msg)
     end
 end
 
+function Viewer:IsWeakCachingActive()
+    local mt = getmetatable(Cache.itemInfo)
+    return mt and mt.__mode == "v"
+end
+
 return Viewer

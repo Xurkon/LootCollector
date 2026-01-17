@@ -1831,10 +1831,11 @@ function Core:OnInitialize()
         print(string.format("String Interning: %d unique links cached", internedCount))
         
         local Viewer = L:GetModule("Viewer", true)
-        if Viewer then
-            local mt = getmetatable(Viewer.Cache and Viewer.Cache.itemInfo)
-            local weakActive = mt and mt.__mode == "v"
+        if Viewer and Viewer.IsWeakCachingActive then
+            local weakActive = Viewer:IsWeakCachingActive()
             print(string.format("Weak Table Caching: %s", weakActive and "|cff00ff00Active|r" or "|cffff0000Inactive|r"))
+        else
+            print("Weak Table Caching: |cff888888Unknown|r")
         end
         
         local discoveries = L:GetDiscoveriesDB()
