@@ -2158,17 +2158,7 @@ function Map:EnsureMinimapTicker()
             
             local minimapShape = GetCurrentMinimapShape()
 
-            if spatialGridDirty or spatialGridZone ~= mapID or Map._minimapPinsDirty then
-                Map:RebuildSpatialGrid(mapID)
-            end
-            
-            local pinsToCheck = Map:GetNearbyPins(px, py)
-            
-            if #pinsToCheck == 0 and Map._mmPins and #Map._mmPins > 0 then
-                pinsToCheck = Map._mmPins
-            end
-
-            for _, pin in ipairs(pinsToCheck) do
+            for _, pin in ipairs(Map._mmPins) do
                 if pin.discovery then 
                     local d = pin.discovery
 
