@@ -2149,7 +2149,7 @@ function Map:EnsureMinimapTicker()
                             Astrolabe:RemoveIconFromMinimap(pin)
                             pin:Hide()
                         else
-                            local result = Astrolabe:PlaceIconOnMinimap(pin, GetCurrentMapContinent(), mapID, d.xy.x, d.xy.y)
+                            local result = Astrolabe:PlaceIconOnMinimap(pin, GetCurrentMapContinent(), GetCurrentMapZone(), d.xy.x, d.xy.y)
                             if result == 0 then
                                 if not pin:IsShown() then
                                     pin:Show()
