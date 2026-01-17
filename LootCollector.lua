@@ -27,6 +27,28 @@ LootCollector.ignoreList = {
 	["The \"Kodo Egg\""] = true,	
 }
 
+local linkIntern = setmetatable({}, {__mode = "kv"})
+
+function LootCollector:InternLink(link)
+    if not link or type(link) ~= "string" then return link end
+    
+    local cached = linkIntern[link]
+    if cached then
+        return cached
+    end
+    
+    linkIntern[link] = link
+    return link
+end
+
+function LootCollector:GetInternStats()
+    local count = 0
+    for _ in pairs(linkIntern) do
+        count = count + 1
+    end
+    return count
+end
+
 LootCollector.sourceSpecificIgnoreList = {
     ["Mystic Scroll: White Walker"] = true,
     ["Mystic Scroll: Powder Mage"] = true,

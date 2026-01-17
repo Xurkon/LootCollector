@@ -1931,7 +1931,7 @@ function Core:HandleLocalLoot(discovery)
         if not existing then
             local newRecord = {
                 g = guid, c = c, z = z, iz = discovery.iz, i = itemID, 
-                il = itemLink,
+                il = L:InternLink(itemLink),
                 xy = { x = x, y = y },
                 fp = discovery.fp, o = discovery.fp,
                 t0 = discovery.t0, ls = discovery.t0, s = Constants.STATUS.CONFIRMED, st = discovery.t0,
@@ -2056,7 +2056,7 @@ function Core:HandleLocalLoot(discovery)
     
     if not rec then
         rec = {
-            g = guid, c = c, z = z, iz = iz, i = itemID, il = colored or discovery.il,
+            g = guid, c = c, z = z, iz = iz, i = itemID, il = L:InternLink(colored or discovery.il),
             xy = { x = x, y = y },
             fp = finderName, o = finderName,
             t0 = t0, ls = t0, s = Constants.STATUS.UNCONFIRMED, st = t0, cl = cl,
