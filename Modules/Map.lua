@@ -2143,17 +2143,13 @@ function Map:EnsureMinimapTicker()
                 if pin.discovery then 
                     local d = pin.discovery
 
-                    
-                    
-                    
-                    
-                    
                     if d.c == c and d.z == mapID then
                         local coordDx = d.xy.x - px
                         local coordDy = d.xy.y - py
                         local coordDistSq = coordDx * coordDx + coordDy * coordDy
                         
                         if coordDistSq > 0.04 then
+                            Astrolabe:RemoveIconFromMinimap(pin)
                             pin:Hide()
                         else
                             local isLooted = L:IsLootedByChar(d.g or d.guid, d)
@@ -2170,14 +2166,12 @@ function Map:EnsureMinimapTicker()
                                     pin:Hide()
                                 end
                             end
-                            end
                         end
                     else
-                        
+                        Astrolabe:RemoveIconFromMinimap(pin)
                         pin:Hide()
                     end
                 else
-                    
                     pin:Hide()
                 end
             end
