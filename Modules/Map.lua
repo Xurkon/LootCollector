@@ -2106,22 +2106,26 @@ function Map:EnsureMinimapTicker()
                     
                     
                     if d.c == c and d.z == mapID then
-                        local distYards, xDist, yDist = ComputeDistance(
-                            c, mapID, px, py,
-                            d.c, d.z, d.xy.x, d.xy.y
-                        )
+                        local isLooted = L:IsLootedByChar(d.g or d.guid, d)
+                        if isLooted then
+                            pin:Hide()
+                        else
+                            local distYards, xDist, yDist = ComputeDistance(
+                                c, mapID, px, py,
+                                d.c, d.z, d.xy.x, d.xy.y
+                            )
 
-                        if distYards and xDist and yDist then
+                            if distYards and xDist and yDist then
                             
-                            if maxDistSq and (distYards * distYards) > maxDistSq then
-                                pin:Hide()
-                            else
+                                if maxDistSq and (distYards * distYards) > maxDistSq then
+                                    pin:Hide()
+                                else
                                 
-                                if rotateEnabled then
-                                    local dx, dy = xDist, yDist
-                                    xDist = dx * cos_f - dy * sin_f
-                                    yDist = dx * sin_f + dy * cos_f
-                                end
+                                    if rotateEnabled then
+                                        local dx, dy = xDist, yDist
+                                        xDist = dx * cos_f - dy * sin_f
+                                        yDist = dx * sin_f + dy * cos_f
+                                    end
 
                                 
                                 local quad = (xDist < 0) and 1 or 3
@@ -2157,6 +2161,7 @@ function Map:EnsureMinimapTicker()
                             end
                         else
                             pin:Hide()
+                        end
                         end
                     else
                         
