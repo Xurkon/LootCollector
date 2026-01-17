@@ -27,7 +27,7 @@ LootCollector.ignoreList = {
 	["The \"Kodo Egg\""] = true,	
 }
 
-local linkIntern = setmetatable({}, {__mode = "kv"})
+local linkIntern = setmetatable({}, {__mode = "v"})
 
 function LootCollector:InternLink(link)
     if not link or type(link) ~= "string" then return link end
