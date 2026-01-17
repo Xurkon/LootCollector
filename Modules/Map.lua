@@ -4,6 +4,8 @@ local L = LootCollector
 local Core = L:GetModule("Core", true)
 local Map = L:NewModule("Map", "AceEvent-3.0")
 
+local Astrolabe = DongleStub("Astrolabe-0.4")
+
 -- Performance: Cache frequently used globals
 local GetTime = GetTime
 local floor = math.floor
@@ -2137,27 +2139,6 @@ function Map:EnsureMinimapTicker()
                  L._mdebug("Map-Ticker", "Forced ticker update (pins dirty).")
             end
 
-            local minimapRadius = Minimap:GetViewRadius()
-            local mapWidth = Minimap:GetWidth()
-            local mapHeight = Minimap:GetHeight()
-
-            local xScale = (minimapRadius * 2) / mapWidth
-            local yScale = (minimapRadius * 2) / mapHeight
-
-            local edgeRadius = minimapRadius - 8
-
-            local maxDistYards = L.db.profile.mapFilters.maxMinimapDistance
-            local maxDistSq = (maxDistYards and maxDistYards > 0) and (maxDistYards * maxDistYards) or nil
-
-            local cos_f, sin_f
-            if rotateEnabled then
-                cos_f = math.cos(facing)
-                sin_f = math.sin(facing)
-            end
-
-            
-            local minimapShape = GetCurrentMinimapShape()
-
             for _, pin in ipairs(Map._mmPins) do
                 if pin.discovery then 
                     local d = pin.discovery
@@ -2177,61 +2158,19 @@ function Map:EnsureMinimapTicker()
                         else
                             local isLooted = L:IsLootedByChar(d.g or d.guid, d)
                             if isLooted then
+                                Astrolabe:RemoveIconFromMinimap(pin)
                                 pin:Hide()
                             else
-                                local distYards, xDist, yDist = ComputeDistance(
-                                    c, mapID, px, py,
-                                    d.c, d.z, d.xy.x, d.xy.y
-                                )
-
-                            if distYards and xDist and yDist then
-                            
-                                if maxDistSq and (distYards * distYards) > maxDistSq then
+                                local result = Astrolabe:PlaceIconOnMinimap(pin, c, d.z, d.xy.x, d.xy.y)
+                                if result == 0 then
+                                    if not pin:IsShown() then
+                                        pin:Show()
+                                    end
+                                else
                                     pin:Hide()
-                                else
-                                
-                                    if rotateEnabled then
-                                        local dx, dy = xDist, yDist
-                                        xDist = dx * cos_f - dy * sin_f
-                                        yDist = dx * sin_f + dy * cos_f
-                                    end
-
-                                
-                                local quad = (xDist < 0) and 1 or 3
-                                if yDist >= 0 then
-                                    quad = quad + 1
-                                end
-
-                                local useCircular = minimapShape and minimapShape[quad]
-                                local dist
-                                if useCircular then
-                                    dist = math.sqrt(xDist * xDist + yDist * yDist)
-                                else
-                                    dist = math.max(math.abs(xDist), math.abs(yDist))
-                                end
-
-                                local iconRadius = ((pin:GetWidth() / 2) + 3) * xScale
-
-                                if dist + iconRadius > edgeRadius then
-                                    local maxEdgeDist = edgeRadius - iconRadius
-                                    if dist > 0 and maxEdgeDist > 0 then
-                                        local scale = maxEdgeDist / dist
-                                        xDist = xDist * scale
-                                        yDist = yDist * scale
-                                    end
-                                end
-
-                                pin:ClearAllPoints()
-                                pin:SetPoint("CENTER", Minimap, "CENTER", xDist / xScale, -yDist / yScale)
-
-                                if not pin:IsShown() then
-                                    pin:Show()
                                 end
                             end
-                        else
-                            pin:Hide()
-                        end
-                        end
+                            end
                         end
                     else
                         

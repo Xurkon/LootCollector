@@ -12,6 +12,9 @@ Bindings.xml
 
 # Load Libraries
 libs\LibStub\LibStub.lua
+Libs\Astrolabe\DongleStub.lua
+Libs\Astrolabe\Astrolabe.lua
+Libs\Astrolabe\AstrolabeMapMonitor.lua
 libs\Ace3\AceAddon-3.0\AceAddon-3.0.xml
 libs\Ace3\AceEvent-3.0\AceEvent-3.0.xml
 libs\Ace3\AceDB-3.0\AceDB-3.0.xml
