@@ -65,6 +65,74 @@ Map.worldMapUpdatePending = false
 Map.worldMapUpdateTimer = 0
 Map.throttleFrame = nil
 
+local SPATIAL_GRID_SIZE = 0.05
+local spatialGrid = {}
+local spatialGridZone = nil
+local spatialGridDirty = true
+
+local function GetGridKey(x, y)
+    local gx = floor((x or 0) / SPATIAL_GRID_SIZE)
+    local gy = floor((y or 0) / SPATIAL_GRID_SIZE)
+    return gx .. ":" .. gy
+end
+
+local function GetAdjacentGridKeys(x, y)
+    local gx = floor((x or 0) / SPATIAL_GRID_SIZE)
+    local gy = floor((y or 0) / SPATIAL_GRID_SIZE)
+    return {
+        (gx-1) .. ":" .. (gy-1), gx .. ":" .. (gy-1), (gx+1) .. ":" .. (gy-1),
+        (gx-1) .. ":" .. gy,     gx .. ":" .. gy,     (gx+1) .. ":" .. gy,
+        (gx-1) .. ":" .. (gy+1), gx .. ":" .. (gy+1), (gx+1) .. ":" .. (gy+1),
+    }
+end
+
+function Map:RebuildSpatialGrid(mapID)
+    wipe(spatialGrid)
+    spatialGridZone = mapID
+    spatialGridDirty = false
+    
+    if not Map._mmPins then return end
+    
+    local pinCount = 0
+    for _, pin in ipairs(Map._mmPins) do
+        if pin.discovery then
+            local d = pin.discovery
+            if d.xy and d.z == mapID then
+                local key = GetGridKey(d.xy.x, d.xy.y)
+                if not spatialGrid[key] then
+                    spatialGrid[key] = {}
+                end
+                spatialGrid[key][#spatialGrid[key] + 1] = pin
+                pinCount = pinCount + 1
+            end
+        end
+    end
+    
+    L._mdebug("Map-SpatialGrid", string.format("Rebuilt grid for zone %s with %d pins", tostring(mapID), pinCount))
+end
+
+function Map:MarkSpatialGridDirty()
+    spatialGridDirty = true
+end
+
+function Map:GetPinsInPlayerArea(px, py, mapID)
+    if spatialGridDirty or spatialGridZone ~= mapID then
+        self:RebuildSpatialGrid(mapID)
+    end
+    
+    local result = {}
+    local keys = GetAdjacentGridKeys(px, py)
+    for _, key in ipairs(keys) do
+        local pins = spatialGrid[key]
+        if pins then
+            for _, pin in ipairs(pins) do
+                result[#result + 1] = pin
+            end
+        end
+    end
+    return result
+end
+
 local function CreateOrShowPersistentOverlayPin(px, py, discovery)
     local parent = WorldMapDetailFrame or WorldMapFrame
     if not parent then return end
@@ -2094,70 +2162,72 @@ function Map:EnsureMinimapTicker()
             
             local minimapShape = GetCurrentMinimapShape()
 
-            for _, pin in ipairs(Map._mmPins) do
+            local zoneChanged = (state.mapID ~= mapID)
+            if zoneChanged then
+                for _, pin in ipairs(Map._mmPins) do
+                    pin:Hide()
+                end
+                Map:MarkSpatialGridDirty()
+            end
+
+            local nearbyPins = Map:GetPinsInPlayerArea(px, py, mapID)
+            local processedCount = 0
+            
+            for _, pin in ipairs(nearbyPins) do
                 if pin.discovery then 
                     local d = pin.discovery
+                    processedCount = processedCount + 1
 
-                    
-                    
-                    
-                    
-                    
-                    if d.c == c and d.z == mapID then
-                        local distYards, xDist, yDist = ComputeDistance(
-                            c, mapID, px, py,
-                            d.c, d.z, d.xy.x, d.xy.y
-                        )
+                    local distYards, xDist, yDist = ComputeDistance(
+                        c, mapID, px, py,
+                        d.c, d.z, d.xy.x, d.xy.y
+                    )
 
-                        if distYards and xDist and yDist then
+                    if distYards and xDist and yDist then
+                        
+                        if maxDistSq and (distYards * distYards) > maxDistSq then
+                            pin:Hide()
+                        else
                             
-                            if maxDistSq and (distYards * distYards) > maxDistSq then
-                                pin:Hide()
+                            if rotateEnabled then
+                                local dx, dy = xDist, yDist
+                                xDist = dx * cos_f - dy * sin_f
+                                yDist = dx * sin_f + dy * cos_f
+                            end
+
+                            
+                            local quad = (xDist < 0) and 1 or 3
+                            if yDist >= 0 then
+                                quad = quad + 1
+                            end
+
+                            local useCircular = minimapShape and minimapShape[quad]
+                            local dist
+                            if useCircular then
+                                dist = math.sqrt(xDist * xDist + yDist * yDist)
                             else
-                                
-                                if rotateEnabled then
-                                    local dx, dy = xDist, yDist
-                                    xDist = dx * cos_f - dy * sin_f
-                                    yDist = dx * sin_f + dy * cos_f
-                                end
+                                dist = math.max(math.abs(xDist), math.abs(yDist))
+                            end
 
-                                
-                                local quad = (xDist < 0) and 1 or 3
-                                if yDist >= 0 then
-                                    quad = quad + 1
-                                end
+                            local iconRadius = ((pin:GetWidth() / 2) + 3) * xScale
 
-                                local useCircular = minimapShape and minimapShape[quad]
-                                local dist
-                                if useCircular then
-                                    dist = math.sqrt(xDist * xDist + yDist * yDist)
-                                else
-                                    dist = math.max(math.abs(xDist), math.abs(yDist))
-                                end
-
-                                local iconRadius = ((pin:GetWidth() / 2) + 3) * xScale
-
-                                if dist + iconRadius > edgeRadius then
-                                    local maxEdgeDist = edgeRadius - iconRadius
-                                    if dist > 0 and maxEdgeDist > 0 then
-                                        local scale = maxEdgeDist / dist
-                                        xDist = xDist * scale
-                                        yDist = yDist * scale
-                                    end
-                                end
-
-                                pin:ClearAllPoints()
-                                pin:SetPoint("CENTER", Minimap, "CENTER", xDist / xScale, -yDist / yScale)
-
-                                if not pin:IsShown() then
-                                    pin:Show()
+                            if dist + iconRadius > edgeRadius then
+                                local maxEdgeDist = edgeRadius - iconRadius
+                                if dist > 0 and maxEdgeDist > 0 then
+                                    local scale = maxEdgeDist / dist
+                                    xDist = xDist * scale
+                                    yDist = yDist * scale
                                 end
                             end
-                        else
-                            pin:Hide()
+
+                            pin:ClearAllPoints()
+                            pin:SetPoint("CENTER", Minimap, "CENTER", xDist / xScale, -yDist / yScale)
+
+                            if not pin:IsShown() then
+                                pin:Show()
+                            end
                         end
                     else
-                        
                         pin:Hide()
                     end
                 else
@@ -2165,6 +2235,8 @@ function Map:EnsureMinimapTicker()
                     pin:Hide()
                 end
             end
+            
+            L._mdebug("Map-SpatialGrid", string.format("Processed %d nearby pins (vs %d total)", processedCount, #Map._mmPins))
         end
     end)
 end
