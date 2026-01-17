@@ -420,13 +420,33 @@
 
             <div class="optimization-card">
                 <h4>v0.7.46 - Performance Optimizations Phase 3</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Memory Optimizations:</strong></p>
                 <ul>
-                    <li><strong>String Interning:</strong> Added <code>InternLink()</code> to deduplicate item link
-                        strings</li>
-                    <li><strong>Weak Table Caching:</strong> Viewer caches now auto-clean via GC</li>
-                    <li><strong>Batch Processing:</strong> Added <code>ProcessInChunks()</code> coroutine utility</li>
-                    <li><strong>New Commands:</strong> <code>/lcstats</code> shows optimization status,
-                        <code>/lcbench</code> for benchmarks
+                    <li><strong>String Interning:</strong> Added <code>InternLink()</code> function to deduplicate
+                        repeated item link strings using weak tables - reduces memory as discoveries share identical
+                        link references</li>
+                    <li><strong>Weak Table Caching:</strong> Converted Viewer.lua caches (<code>itemInfo</code>,
+                        <code>characterClass</code>, <code>worldforged</code>, <code>zoneNames</code>) to use weak
+                        values - allows garbage collector to automatically clean unused entries</li>
+                </ul>
+                <p style="color: var(--text-secondary); margin: 10px 0;"><strong>Processing Optimizations:</strong></p>
+                <ul>
+                    <li><strong>Batch Processing:</strong> Added <code>ProcessInChunks()</code> coroutine utility for
+                        spreading heavy database operations across frames (50 items/frame) - prevents UI freezing during
+                        large operations</li>
+                </ul>
+                <p style="color: var(--text-secondary); margin: 10px 0;"><strong>New Commands:</strong></p>
+                <ul>
+                    <li><code>/lcstats</code> - Shows optimization status: string interning count, weak caching status,
+                        total discoveries</li>
+                    <li><code>/lcbench</code> - Benchmarks minimap pin performance (spatial hashing comparison)</li>
+                </ul>
+                <p style="color: var(--text-secondary); margin: 10px 0;"><strong>Technical Notes:</strong></p>
+                <ul>
+                    <li>Spatial hashing for minimap pins was implemented (93% reduction in pins processed) but
+                        <strong>reverted</strong> due to pin rotation/visibility bugs</li>
+                    <li>Event coalescing deferred - requires careful integration to avoid breaking map updates</li>
+                    <li>Files modified: <code>LootCollector.lua</code>, <code>Core.lua</code>, <code>Viewer.lua</code>
                     </li>
                 </ul>
             </div>
