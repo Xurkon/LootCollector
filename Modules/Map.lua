@@ -2955,4 +2955,9 @@ function Map:EnsureThrottleFrame()
     end)
 end
 
+Map:RegisterMessage("LOOTCOLLECTOR_PLAYER_LOOTED_ITEM", function()
+    Map._minimapPinsDirty = true
+    Map.cacheIsDirty = true
+end)
+
 return Map
