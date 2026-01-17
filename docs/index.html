@@ -216,6 +216,70 @@
         </div>
 
         <div class="section">
+            <h2>Version 0.7.46 - Performance Optimizations Phase 3</h2>
+
+            <div class="optimization-card">
+                <h4>LootCollector.lua - String Interning</h4>
+                <ul>
+                    <li>Added <code>linkIntern</code> weak table with <code>__mode = "v"</code> for automatic GC of
+                        unused strings</li>
+                    <li>Added <code>LootCollector:InternLink(link)</code> function to deduplicate item link strings</li>
+                    <li>Added <code>LootCollector:GetInternStats()</code> to return count of cached unique links</li>
+                    <li>Applied to discovery record creation in Core.lua (lines 1934, 2058)</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>Viewer.lua - Weak Table Caching</h4>
+                <ul>
+                    <li>Converted <code>Cache.itemInfo</code> to <code>setmetatable({}, {__mode = "v"})</code></li>
+                    <li>Converted <code>Cache.characterClass</code> to <code>setmetatable({}, {__mode = "v"})</code>
+                    </li>
+                    <li>Converted <code>Cache.worldforged</code> to <code>setmetatable({}, {__mode = "v"})</code></li>
+                    <li>Converted <code>Cache.zoneNames</code> to <code>setmetatable({}, {__mode = "v"})</code></li>
+                    <li>Added <code>Viewer:IsWeakCachingActive()</code> method to verify metatable mode</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>LootCollector.lua - Batch Processing with Coroutines</h4>
+                <ul>
+                    <li>Added <code>activeCoroutines</code> table to track running coroutines</li>
+                    <li>Added <code>LootCollector:ProcessInChunks(items, processor, chunkSize, onComplete)</code></li>
+                    <li>Uses <code>coroutine.create()</code> and <code>coroutine.yield()</code> for frame-spread
+                        processing</li>
+                    <li>Default chunk size: 50 items per frame</li>
+                    <li>Creates OnUpdate frame that calls <code>coroutine.resume()</code> each frame</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>Core.lua - New Slash Commands</h4>
+                <ul>
+                    <li><code>/lcstats</code> - Displays optimization status: string interning count, weak caching
+                        active, total discoveries</li>
+                    <li><code>/lcbench</code> - Benchmarks minimap pin performance: compares full iteration vs spatial
+                        grid lookup (100 iterations)</li>
+                </ul>
+            </div>
+
+            <h3>Technical Details</h3>
+            <p>Weak tables with <code>__mode = "v"</code> allow values to be garbage collected when no other references
+                exist.
+                String interning shares identical string references across discoveries, reducing memory for duplicate
+                item links.
+                Coroutine-based batch processing prevents UI freezing by yielding after each chunk.
+            </p>
+
+            <h3>Known Issues</h3>
+            <p><strong>Spatial Hashing:</strong> Implementation achieved 93% reduction in pins processed (430 → 47) but
+                was <strong>reverted</strong>
+                due to pin rotation/visibility bugs on minimap/FarmHud. Needs more careful integration into the existing
+                <code>_mmTicker</code> OnUpdate loop.
+            </p>
+        </div>
+
+        <div class="section">
             <h2>Version 0.7.43 - Performance Optimizations Phase 2</h2>
 
             <div class="optimization-card">
@@ -427,7 +491,8 @@
                         link references</li>
                     <li><strong>Weak Table Caching:</strong> Converted Viewer.lua caches (<code>itemInfo</code>,
                         <code>characterClass</code>, <code>worldforged</code>, <code>zoneNames</code>) to use weak
-                        values - allows garbage collector to automatically clean unused entries</li>
+                        values - allows garbage collector to automatically clean unused entries
+                    </li>
                 </ul>
                 <p style="color: var(--text-secondary); margin: 10px 0;"><strong>Processing Optimizations:</strong></p>
                 <ul>
@@ -444,7 +509,8 @@
                 <p style="color: var(--text-secondary); margin: 10px 0;"><strong>Technical Notes:</strong></p>
                 <ul>
                     <li>Spatial hashing for minimap pins was implemented (93% reduction in pins processed) but
-                        <strong>reverted</strong> due to pin rotation/visibility bugs</li>
+                        <strong>reverted</strong> due to pin rotation/visibility bugs
+                    </li>
                     <li>Event coalescing deferred - requires careful integration to avoid breaking map updates</li>
                     <li>Files modified: <code>LootCollector.lua</code>, <code>Core.lua</code>, <code>Viewer.lua</code>
                     </li>
