@@ -42,8 +42,8 @@ local function GetAdjacentKeys(x, y)
     local cx = floor(x / SPATIAL_GRID_SIZE)
     local cy = floor(y / SPATIAL_GRID_SIZE)
     local keys = {}
-    for dx = -1, 1 do
-        for dy = -1, 1 do
+    for dx = -2, 2 do
+        for dy = -2, 2 do
             keys[#keys + 1] = (cx + dx) .. ":" .. (cy + dy)
         end
     end
