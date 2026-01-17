@@ -4427,11 +4427,9 @@ function Viewer:ToggleLootedState(guid, discoveryData)
     local Map = L:GetModule("Map", true)
     if Map then
         Map.cacheIsDirty = true 
+        Map._minimapPinsDirty = true
         if Map.Update and WorldMapFrame and WorldMapFrame:IsShown() then
             Map:Update()
-        end
-        if Map.UpdateMinimap then
-            Map:UpdateMinimap()
         end
     end
 
