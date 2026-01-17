@@ -29,6 +29,68 @@ Map._lastLocationFetchTime = 0
 Map._cachedLocation = { c = nil, mapID = nil, px = nil, py = nil }
 Map._minimapPinsDirty = false 
 
+local SPATIAL_GRID_SIZE = 0.05
+local spatialGrid = {}
+local spatialGridZone = nil
+local spatialGridDirty = true
+
+local function GetGridKey(x, y)
+    return floor(x / SPATIAL_GRID_SIZE) .. ":" .. floor(y / SPATIAL_GRID_SIZE)
+end
+
+local function GetAdjacentKeys(x, y)
+    local cx = floor(x / SPATIAL_GRID_SIZE)
+    local cy = floor(y / SPATIAL_GRID_SIZE)
+    local keys = {}
+    for dx = -1, 1 do
+        for dy = -1, 1 do
+            keys[#keys + 1] = (cx + dx) .. ":" .. (cy + dy)
+        end
+    end
+    return keys
+end
+
+function Map:RebuildSpatialGrid(mapID)
+    wipe(spatialGrid)
+    spatialGridZone = mapID
+    spatialGridDirty = false
+    
+    if not Map._mmPins then return end
+    
+    local pinCount = 0
+    for _, pin in ipairs(Map._mmPins) do
+        if pin.discovery then
+            local d = pin.discovery
+            if d.z == mapID and d.xy then
+                local key = GetGridKey(d.xy.x, d.xy.y)
+                spatialGrid[key] = spatialGrid[key] or {}
+                spatialGrid[key][#spatialGrid[key] + 1] = pin
+                pinCount = pinCount + 1
+            end
+        end
+    end
+    
+    L._mdebug("Map-Spatial", format("Rebuilt grid for zone %s with %d pins", tostring(mapID), pinCount))
+end
+
+function Map:GetNearbyPins(px, py)
+    local result = {}
+    local adjacentKeys = GetAdjacentKeys(px, py)
+    for _, key in ipairs(adjacentKeys) do
+        local pins = spatialGrid[key]
+        if pins then
+            for _, pin in ipairs(pins) do
+                result[#result + 1] = pin
+            end
+        end
+    end
+    return result
+end
+
+function Map:MarkSpatialGridDirty()
+    spatialGridDirty = true
+end
+
 Map.pins = Map.pins or {}
 
 Map._hoverBtn = Map._hoverBtn or nil
@@ -2096,7 +2158,17 @@ function Map:EnsureMinimapTicker()
             
             local minimapShape = GetCurrentMinimapShape()
 
-            for _, pin in ipairs(Map._mmPins) do
+            if spatialGridDirty or spatialGridZone ~= mapID or Map._minimapPinsDirty then
+                Map:RebuildSpatialGrid(mapID)
+            end
+            
+            local pinsToCheck = Map:GetNearbyPins(px, py)
+            
+            if #pinsToCheck == 0 and Map._mmPins and #Map._mmPins > 0 then
+                pinsToCheck = Map._mmPins
+            end
+
+            for _, pin in ipairs(pinsToCheck) do
                 if pin.discovery then 
                     local d = pin.discovery
 
@@ -2963,6 +3035,7 @@ end
 Map:RegisterMessage("LOOTCOLLECTOR_PLAYER_LOOTED_ITEM", function()
     Map._minimapPinsDirty = true
     Map.cacheIsDirty = true
+    spatialGridDirty = true
 end)
 
 return Map
