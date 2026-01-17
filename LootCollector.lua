@@ -49,6 +49,42 @@ function LootCollector:GetInternStats()
     return count
 end
 
+local activeCoroutines = {}
+
+function LootCollector:ProcessInChunks(items, processor, chunkSize, onComplete)
+    chunkSize = chunkSize or 50
+    
+    local co = coroutine.create(function()
+        local processed = 0
+        for key, item in pairs(items) do
+            processor(key, item)
+            processed = processed + 1
+            if processed % chunkSize == 0 then
+                coroutine.yield(processed)
+            end
+        end
+        return processed
+    end)
+    
+    local frame = CreateFrame("Frame")
+    activeCoroutines[co] = frame
+    
+    frame:SetScript("OnUpdate", function()
+        if coroutine.status(co) == "dead" then
+            frame:SetScript("OnUpdate", nil)
+            activeCoroutines[co] = nil
+            if onComplete then onComplete() end
+            return
+        end
+        
+        local ok, result = coroutine.resume(co)
+        if not ok then
+            frame:SetScript("OnUpdate", nil)
+            activeCoroutines[co] = nil
+        end
+    end)
+end
+
 LootCollector.sourceSpecificIgnoreList = {
     ["Mystic Scroll: White Walker"] = true,
     ["Mystic Scroll: Powder Mage"] = true,
