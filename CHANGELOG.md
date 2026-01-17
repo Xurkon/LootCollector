@@ -1,3 +1,36 @@
+## LootCollector 0.7.47 - Astrolabe Integration for Smooth Minimap Rotation
+
+### Major Improvements
+
+- **Astrolabe Library Integration:**
+  - Integrated Astrolabe-0.4 library (DongleStub, Astrolabe, AstrolabeMapMonitor)
+  - Replaced ~80 lines of manual minimap rotation code with Astrolabe API
+  - Minimap pins now rotate as smoothly as GatherMate pins
+  - Automatic handling of minimap shape, zoom scaling, and edge clamping
+
+### Technical Implementation
+
+- **Library Files Added:**
+  - `Libs/Astrolabe/DongleStub.lua` - Library versioning system
+  - `Libs/Astrolabe/Astrolabe.lua` - Core minimap icon positioning
+  - `Libs/Astrolabe/AstrolabeMapMonitor.lua` - World map state monitoring
+
+- **API Usage:**
+  - `Astrolabe:PlaceIconOnMinimap(pin, continent, zone, x, y)` - Automatic rotation/positioning
+  - `Astrolabe:RemoveIconFromMinimap(pin)` - Clean removal from Astrolabe tracking
+  - `Astrolabe:GetDistanceToIcon(pin)` - Distance check for visibility filtering
+
+- **Distance Filtering:**
+  - Pins beyond `minimapRadius * 1.5` are hidden to prevent edge positioning issues
+  - Prevents distant pins from clustering at minimap edges
+
+### Ticker Optimization
+
+- Increased ticker rate from 0.1s (10 FPS) to 0.016s (60 FPS) for smoother updates
+- Astrolabe handles rotation via its own internal OnUpdate handler
+
+---
+
 ## LootCollector 0.7.46 - Performance Optimizations Phase 3
 
 ### Performance Improvements

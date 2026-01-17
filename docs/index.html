@@ -483,6 +483,17 @@
             <h2>Changelog</h2>
 
             <div class="optimization-card">
+                <h4>v0.7.47 - Astrolabe Integration for Smooth Minimap Rotation</h4>
+                <ul>
+                    <li>Integrated Astrolabe-0.4 library for automatic minimap icon positioning</li>
+                    <li>Replaced ~80 lines of manual rotation code with <code>Astrolabe:PlaceIconOnMinimap()</code></li>
+                    <li>Pins now rotate as smoothly as GatherMate pins</li>
+                    <li>Added distance filtering to hide pins beyond <code>minimapRadius * 1.5</code></li>
+                    <li>Increased ticker rate to 60 FPS for smoother updates</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
                 <h4>v0.7.46 - Performance Optimizations Phase 3</h4>
                 <ul>
                     <li>String Interning, Weak Table Caching, Batch Processing</li>
