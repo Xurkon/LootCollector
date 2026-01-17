@@ -1822,6 +1822,28 @@ function Core:OnInitialize()
         print(string.format("Spatial hashing (%dx): %.2f ms", iterations, time2/1000))
         print(string.format("Speedup: %.1fx faster", time1/time2))
     end
+    
+    SLASH_LOOTCOLLECTORSTATS1 = "/lcstats"
+    SlashCmdList["LOOTCOLLECTORSTATS"] = function()
+        print("|cff00ff00=== LootCollector Optimization Stats ===|r")
+        
+        local internedCount = L:GetInternStats()
+        print(string.format("String Interning: %d unique links cached", internedCount))
+        
+        local Viewer = L:GetModule("Viewer", true)
+        if Viewer then
+            local mt = getmetatable(Viewer.Cache and Viewer.Cache.itemInfo)
+            local weakActive = mt and mt.__mode == "v"
+            print(string.format("Weak Table Caching: %s", weakActive and "|cff00ff00Active|r" or "|cffff0000Inactive|r"))
+        end
+        
+        local discoveries = L:GetDiscoveriesDB()
+        local discCount = 0
+        if discoveries then
+            for _ in pairs(discoveries) do discCount = discCount + 1 end
+        end
+        print(string.format("Total discoveries in DB: %d", discCount))
+    end
 
     ScheduleAfter(8, function()
 	    Core:FixIncorrectInstanceContinentIDs()
