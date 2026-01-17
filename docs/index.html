@@ -426,7 +426,8 @@
                     <li><strong>Weak Table Caching:</strong> Viewer caches now auto-clean via GC</li>
                     <li><strong>Batch Processing:</strong> Added <code>ProcessInChunks()</code> coroutine utility</li>
                     <li><strong>New Commands:</strong> <code>/lcstats</code> shows optimization status,
-                        <code>/lcbench</code> for benchmarks</li>
+                        <code>/lcbench</code> for benchmarks
+                    </li>
                 </ul>
             </div>
 
@@ -506,7 +507,9 @@
                 implemented in future versions.</p>
 
             <div class="optimization-card">
-                <h4>Spatial Hashing for Minimap Pins</h4>
+                <h4>Spatial Hashing for Minimap Pins <span
+                        style="background: #f44336; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">REVERTED</span>
+                </h4>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Faster distance
                     calculations when many pins are visible. Currently O(n) for each update, could be O(1) average.</p>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> High - especially
@@ -521,7 +524,9 @@ end
             </div>
 
             <div class="optimization-card">
-                <h4>Lazy Viewer Row Creation</h4>
+                <h4>Lazy Viewer Row Creation <span
+                        style="background: #9e9e9e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">SKIPPED</span>
+                </h4>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Faster addon
                     load time by delaying row frame creation until viewer is opened.</p>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> Medium - reduces
@@ -538,7 +543,9 @@ end</code></pre>
             </div>
 
             <div class="optimization-card">
-                <h4>String Interning for Item Links</h4>
+                <h4>String Interning for Item Links <span
+                        style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">IMPLEMENTED</span>
+                </h4>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Reduced memory
                     usage by deduplicating repeated item link strings.</p>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> Low-Medium -
@@ -556,7 +563,9 @@ end</code></pre>
             </div>
 
             <div class="optimization-card">
-                <h4>Event Coalescing for Map Updates</h4>
+                <h4>Event Coalescing for Map Updates <span
+                        style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">DEFERRED</span>
+                </h4>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Prevents
                     multiple rapid map redraws by batching updates within a time window.</p>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> Medium - prevents
@@ -575,7 +584,9 @@ end</code></pre>
             </div>
 
             <div class="optimization-card">
-                <h4>Batch Processing with Coroutines</h4>
+                <h4>Batch Processing with Coroutines <span
+                        style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">IMPLEMENTED</span>
+                </h4>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Spread heavy
                     operations across multiple frames to prevent freezing.</p>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> High - critical
@@ -596,7 +607,9 @@ end</code></pre>
             </div>
 
             <div class="optimization-card">
-                <h4>Weak Table Caching for Tooltips</h4>
+                <h4>Weak Table Caching for Tooltips <span
+                        style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">IMPLEMENTED</span>
+                </h4>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Auto-clearing
                     cache that doesn't prevent garbage collection of unused entries.</p>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Impact:</strong> Low - minor
