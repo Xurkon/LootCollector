@@ -2036,6 +2036,7 @@ function Map:EnsureMinimapTicker()
 
             local rotateEnabled = (GetCVar("rotateMinimap") == "1")
             local facing = GetPlayerFacing()
+            local currentZoom = Minimap:GetZoom()
 
             
             local state = Map._lastPlayerState
@@ -2044,7 +2045,8 @@ function Map:EnsureMinimapTicker()
                 mapID == state.mapID and
                 math.abs(px - (state.px or -1)) < 0.0001 and
                 math.abs(py - (state.py or -1)) < 0.0001 and
-                math.abs(facing - (state.facing or -1)) < 0.001
+                math.abs(facing - (state.facing or -1)) < 0.001 and
+                currentZoom == (state.zoom or -1)
             )
 
             
@@ -2061,7 +2063,7 @@ function Map:EnsureMinimapTicker()
             Map._minimapPinsDirty = false 
             Map._mmInterval = 0.1
 
-            state.c, state.mapID, state.px, state.py, state.facing = c, mapID, px, py, facing
+            state.c, state.mapID, state.px, state.py, state.facing, state.zoom = c, mapID, px, py, facing, currentZoom
 
             if playerMoved then
                  L._mdebug(
