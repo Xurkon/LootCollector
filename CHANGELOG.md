@@ -1,4 +1,39 @@
-## LootCollector 0.7.45 - Mystic Scroll Looted Persistence Fix
+## LootCollector 0.7.46 - Performance Optimizations Phase 3
+
+### Performance Improvements
+
+- **String Interning:**
+  - Added `InternLink()` function to deduplicate repeated item link strings
+  - Reduces memory usage by sharing identical string references
+  - Applied to discovery record creation in Core.lua
+
+- **Weak Table Caching:**
+  - Converted Viewer.lua caches to use weak tables (`itemInfo`, `characterClass`, `worldforged`, `zoneNames`)
+  - Allows garbage collector to automatically clean unused cache entries
+  - Added `IsWeakCachingActive()` method for verification
+
+- **Batch Processing Utility:**
+  - Added `ProcessInChunks()` coroutine utility for spreading heavy operations across frames
+  - Prevents UI freezing during large database operations
+  - Processes 50 items per frame by default
+
+### New Commands
+
+- **`/lcstats`** - Shows optimization status including:
+  - String interning count
+  - Weak table caching status
+  - Total discoveries in database
+
+- **`/lcbench`** - Benchmarks minimap pin performance (spatial hashing comparison)
+
+### Technical Notes
+
+- Spatial hashing for minimap pins was implemented but reverted due to pin rotation/visibility bugs
+- Event coalescing deferred for future implementation
+
+---
+
+
 
 ### Bug Fixes
 
