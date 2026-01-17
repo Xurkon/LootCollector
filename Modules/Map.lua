@@ -2168,14 +2168,21 @@ function Map:EnsureMinimapTicker()
                     
                     
                     if d.c == c and d.z == mapID then
-                        local isLooted = L:IsLootedByChar(d.g or d.guid, d)
-                        if isLooted then
+                        local coordDx = d.xy.x - px
+                        local coordDy = d.xy.y - py
+                        local coordDistSq = coordDx * coordDx + coordDy * coordDy
+                        
+                        if coordDistSq > 0.04 then
                             pin:Hide()
                         else
-                            local distYards, xDist, yDist = ComputeDistance(
-                                c, mapID, px, py,
-                                d.c, d.z, d.xy.x, d.xy.y
-                            )
+                            local isLooted = L:IsLootedByChar(d.g or d.guid, d)
+                            if isLooted then
+                                pin:Hide()
+                            else
+                                local distYards, xDist, yDist = ComputeDistance(
+                                    c, mapID, px, py,
+                                    d.c, d.z, d.xy.x, d.xy.y
+                                )
 
                             if distYards and xDist and yDist then
                             
@@ -2223,6 +2230,7 @@ function Map:EnsureMinimapTicker()
                             end
                         else
                             pin:Hide()
+                        end
                         end
                         end
                     else
