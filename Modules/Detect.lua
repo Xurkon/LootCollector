@@ -479,6 +479,11 @@ function Detect:OnLootOpened()
     local zoneInfo = ZoneList and ZoneList.MapDataByID[mapID]
 
     if zoneInfo then
+        -- Debug: Print loot window title to identify PvP chests
+        local title = _G["LootFrameTitleText"] and _G["LootFrameTitleText"]:GetText()
+        if title then
+            L:Print("Loot Window Title: " .. title)
+        end
         
         lastLootContext.c = zoneInfo.continentID
         lastLootContext.z = mapID 
