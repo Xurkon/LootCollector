@@ -478,13 +478,22 @@ function Detect:OnLootOpened()
     local ZoneList = L:GetModule("ZoneList", true)
     local zoneInfo = ZoneList and ZoneList.MapDataByID[mapID]
 
+    -- Filter out PvP "Death Chests" or similar player-dropped loot containers
+    local title = _G["LootFrameTitleText"] and _G["LootFrameTitleText"]:GetText()
+    local PVP_CONTAINER_NAMES = {
+        ["Unclaimed Belongings"] = true,
+        ["Human Corpse"] = true, -- Common fallback
+        ["Unknown"] = true,
+    }
+    
+    if title and PVP_CONTAINER_NAMES[title] then
+        -- Mark context as invalid for world loot recording
+        self._ctx.lastLootOpenedAt = 0
+        lastLootContext.openedAt = 0
+        return
+    end
+
     if zoneInfo then
-        -- Debug: Print loot window title to identify PvP chests
-        local title = _G["LootFrameTitleText"] and _G["LootFrameTitleText"]:GetText()
-        if title then
-            L:Print("Loot Window Title: " .. title)
-        end
-        
         lastLootContext.c = zoneInfo.continentID
         lastLootContext.z = mapID 
         lastLootContext.iz = 0   
