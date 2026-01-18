@@ -381,6 +381,19 @@
 
         <div class="section">
             <h2>Files Modified</h2>
+            <div class="changelog-entry">
+                <div class="version-header">
+                    <span class="version-tag">v0.7.47.1</span>
+                    <span class="date">January 17, 2026</span>
+                </div>
+                <h3>PvP Death Chest Fix</h3>
+                <ul>
+                    <li><strong>Blacklist Implemented:</strong> PvP loot containers ("Unclaimed Belongings", "Human
+                        Corpse") are now ignored.</li>
+                    <li><strong>False Positives:</strong> Fixed issue where player death chests created permanent world
+                        pins.</li>
+                </ul>
+            </div>
             <div class="file-list">
                 <div class="file-item">
                     <div class="filename">Toast.lua</div>
@@ -505,6 +518,15 @@
 
         <div class="section">
             <h2>Changelog</h2>
+
+            <div class="optimization-card">
+                <h4>v0.7.47.1 - PvP Death Chest False Positives Fix</h4>
+                <ul>
+                    <li>Implemented blacklist for "Unclaimed Belongings" and "Human Corpse" loot containers</li>
+                    <li>Prevents PvP death chests from being incorrectly recorded as world discoveries</li>
+                    <li>Fixed issue where opening a player's dropped loot would spawn a permanent map pin</li>
+                </ul>
+            </div>
 
             <div class="optimization-card">
                 <h4>v0.7.47 - Astrolabe Integration for Smooth Minimap Rotation</h4>

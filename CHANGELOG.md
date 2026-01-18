@@ -1,3 +1,11 @@
+## LootCollector 0.7.47.1 - PvP Death Chest False Positives Fix
+
+### Bug Fixes
+- **PvP Death Chest Filtering:**
+  - Implemented blacklist for "Unclaimed Belongings" and "Human Corpse" loot containers.
+  - Prevents PvP death chests from being incorrectly recorded as world discoveries.
+  - Fixed issue where opening a player's dropped loot would spawn a permanent map pin.
+
 ## LootCollector 0.7.47 - Astrolabe Integration for Smooth Minimap Rotation
 
 ### Major Improvements
