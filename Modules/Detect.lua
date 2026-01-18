@@ -482,6 +482,7 @@ function Detect:OnLootOpened()
     local title = _G["LootFrameTitleText"] and _G["LootFrameTitleText"]:GetText()
     local PVP_CONTAINER_NAMES = {
         ["Unclaimed Belongings"] = true,
+        ["unclaimed_belongings"] = true,
         ["Human Corpse"] = true, -- Common fallback
         ["Unknown"] = true,
     }
