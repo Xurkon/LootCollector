@@ -1325,12 +1325,22 @@ function LootCollector:OnDisable()
     self:UnregisterAllEvents()
 end
 
-SLASH_LCCLEANUP1 = "/lccdb"
-SlashCmdList["LCCLEANUP"] = function()
-    local Core = LootCollector:GetModule("Core", true)
-    if Core and Core.RunManualDatabaseCleanup then
-        Core:RunManualDatabaseCleanup()
-    else
-        print("|cffff7f00LootCollector:|r Core module not available.")
+    SLASH_LCCLEANUPCOMMAND1 = "/lccleanup"
+    SlashCmdList["LCCLEANUPCOMMAND"] = function()
+        local Core = LootCollector:GetModule("Core", true)
+        if Core and Core.RunCollectedCleanup then
+            Core:RunCollectedCleanup()
+        else
+            print("|cffff7f00LootCollector:|r Core module not available.")
+        end
     end
-end
+
+    SLASH_LCCLEANUP1 = "/lccdb"
+    SlashCmdList["LCCLEANUP"] = function()
+        local Core = LootCollector:GetModule("Core", true)
+        if Core and Core.RunManualDatabaseCleanup then
+            Core:RunManualDatabaseCleanup()
+        else
+            print("|cffff7f00LootCollector:|r Core module not available.")
+        end
+    end

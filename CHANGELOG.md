@@ -1,3 +1,8 @@
+## LootCollector 0.7.51 - Cleanup Command
+
+### New Features
+- **Cleanup Command:** Added `/lccleanup`. This command scans your database for items you have already collected (via Achievements, Appearances, Toy Box, etc.) and marks them as "looted" to hide them from the map. This is useful for cleaning up pins for items learned from the Auction House or Trade.
+
 ## LootCollector 0.7.50 - Fix for Collected Items
 
 ### Bug Fixes

@@ -3310,3 +3310,68 @@ function Core:FixLegacyZoneIDs()
         print("|cff00ff00LootCollector:|r No invalid zone combinations found.")
     end
 end
+
+function Core:RunCollectedCleanup()
+    local discoveries = L:GetDiscoveriesDB()
+    if not discoveries then return end
+    
+    if not (L.db and L.db.char) then return end
+    L.db.char.looted = L.db.char.looted or {}
+    L.db.char.lootedByItemZone = L.db.char.lootedByItemZone or {}
+
+    local count = 0
+    local Constants = L:GetModule("Constants", true)
+
+    print("|cff00ff00LootCollector:|r Scanning for collected items...")
+
+    for guid, d in pairs(discoveries) do
+        if d and d.i and d.i > 0 then
+            -- Check if we have collected this item (appearance/toy/mount/etc)
+            if L:IsItemCollected(d.i) then
+                local alreadyMarked = false
+                
+                -- Check standard looted list
+                if L.db.char.looted[guid] then
+                    alreadyMarked = true
+                end
+                
+                -- Check ItemZone list for WF/Scrolls
+                local isWFOrScroll = false
+                if Constants and (d.dt == Constants.DISCOVERY_TYPE.WORLDFORGED or d.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL) then
+                    isWFOrScroll = true
+                    local itemZoneKey = tostring(d.i) .. "-" .. tostring(d.z or 0)
+                    if L.db.char.lootedByItemZone[itemZoneKey] then
+                        alreadyMarked = true
+                    end
+                end
+
+                if not alreadyMarked then
+                    -- Mark as looted
+                    local now = time()
+                    L.db.char.looted[guid] = now
+                    
+                    if isWFOrScroll then
+                        local itemZoneKey = tostring(d.i) .. "-" .. tostring(d.z or 0)
+                        L.db.char.lootedByItemZone[itemZoneKey] = now
+                    end
+                    
+                    count = count + 1
+                    -- L._debug("Cleanup", "Marked collected: " .. (d.il or d.i))
+                end
+            end
+        end
+    end
+
+    if count > 0 then
+        print(string.format("|cff00ff00LootCollector:|r Cleanup complete! Marked %d items as looted.", count))
+        
+        local Map = L:GetModule("Map", true)
+        if Map then
+            Map.cacheIsDirty = true
+            if Map.Update and WorldMapFrame and WorldMapFrame:IsShown() then Map:Update() end
+            if Map.UpdateMinimap then Map:UpdateMinimap() end
+        end
+    else
+        print("|cff00ff00LootCollector:|r Cleanup complete. No new collected items found.")
+    end
+end
