@@ -1,3 +1,9 @@
+## LootCollector 0.7.50 - Fix for Collected Items
+
+### Bug Fixes
+- **Fixed Collected Item Cleanup:**
+  - Improved the logic for hiding collected items (Enchants, Mystic Scrolls, etc.). The map now checks the game client's "Collected" tooltip status in addition to the local database, ensuring that items learned from sources like the Auction House or Trade are correctly hidden when "Hide Looted" is enabled.
+
 ## LootCollector 0.7.49 - Map Pin & HUD Fixes
 
 ### Bug Fixes

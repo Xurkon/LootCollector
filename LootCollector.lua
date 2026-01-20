@@ -570,8 +570,13 @@ function LootCollector:IsLootedByChar(guid, discoveryData)
     if self.db.char.looted and self.db.char.looted[guid] then
         return true
     end
-    
+
     if discoveryData then
+        -- Check if we have the item collected in our appearance/spells/toy collection via client tooltip
+        if discoveryData.i and discoveryData.i > 0 and self:IsItemCollected(discoveryData.i) then
+            return true
+        end
+
         local Constants = self:GetModule("Constants", true)
         if Constants and (discoveryData.dt == Constants.DISCOVERY_TYPE.WORLDFORGED or discoveryData.dt == Constants.DISCOVERY_TYPE.MYSTIC_SCROLL) then
             local itemZoneKey = tostring(discoveryData.i or 0) .. "-" .. tostring(discoveryData.z or 0)
