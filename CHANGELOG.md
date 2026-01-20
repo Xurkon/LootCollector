@@ -3,6 +3,11 @@
 ### Bug Fixes
 - **Fixed Collected Detection:** Fixed a regression in 0.7.52 where all items were being incorrectly identified as "Collected" due to fuzzy matching. The detection is now strict and ignores text formatting/colors to ensure accuracy.
 
+### Optimizations
+- **Spatial Hashing for Minimap:**
+  - Implemented a spatial hashing system for Minimap pins (provided by Astrolabe).
+  - This significantly improves performance when thousands of nodes are loaded by only processing pins in the player's immediate vicinity.
+
 ## LootCollector 0.7.52 - Cleanup Fix
 
 ### Bug Fixes
