@@ -511,6 +511,13 @@ local collectedCache = {}
 local collectedCacheTime = {}
 local CACHE_DURATION = 300
 
+local function StripColors(text)
+    if not text then return nil end
+    text = text:gsub("|c%x%x%x%x%x%x%x%x", "")
+    text = text:gsub("|r", "")
+    return text
+end
+
 function LootCollector:IsItemCollected(itemID)
     if not itemID or itemID == 0 then return false end
     
@@ -545,13 +552,14 @@ function LootCollector:IsItemCollected(itemID)
     end
     
     local isCollected = false
-    local isCollected = false
     for i = 1, numLines do
         local line = _G["LootCollectorCollectedTooltipTextLeft" .. i]
         if line then
             local text = line:GetText()
             if text and type(text) == "string" then
-                if string.find(text, "Collected") or string.find(text, "Already Known") or string.find(text, "Already known") then
+                local cleanText = StripColors(text)
+                -- STRICT MATCHING to avoid matching "LootCollector" addon name or "Not Collected"
+                if cleanText == "Collected" or cleanText == "Already Known" or cleanText == "Already known" then
                     isCollected = true
                     break
                 end

@@ -1,3 +1,8 @@
+## LootCollector 0.7.53 - Regression Fix
+
+### Bug Fixes
+- **Fixed Collected Detection:** Fixed a regression in 0.7.52 where all items were being incorrectly identified as "Collected" due to fuzzy matching. The detection is now strict and ignores text formatting/colors to ensure accuracy.
+
 ## LootCollector 0.7.52 - Cleanup Fix
 
 ### Bug Fixes
