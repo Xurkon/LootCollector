@@ -1,3 +1,12 @@
+## LootCollector 0.7.49 - Map Pin & HUD Fixes
+
+### Bug Fixes
+- **Fixed "Stuck" Map Pins:**
+  - Resolved an issue where map pins for nodes/items would remain stuck on the screen even after moving far away.
+  - This was caused by the `UpdateMinimap` function aggressively showing all pins, bypassing the visibility logic managed by the spatial hashing system.
+- **FarmHUD Compatibility:**
+  - Logic updated to better cooperate with FarmHUD's proxy system (handled in FarmHUD v2.0.8).
+
 ## LootCollector 0.7.48 - Viewer Crash Fix & Gladdy Compatibility
 
 ### Bug Fixes [CRITICAL]

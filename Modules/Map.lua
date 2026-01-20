@@ -40,12 +40,13 @@ local function GetGridKey(x, y)
     return floor(x / SPATIAL_GRID_SIZE) .. ":" .. floor(y / SPATIAL_GRID_SIZE)
 end
 
-local function GetAdjacentKeys(x, y)
+local function GetAdjacentKeys(x, y, range)
     local cx = floor(x / SPATIAL_GRID_SIZE)
     local cy = floor(y / SPATIAL_GRID_SIZE)
+    local r = range or 2
     local keys = {}
-    for dx = -2, 2 do
-        for dy = -2, 2 do
+    for dx = -r, r do
+        for dy = -r, r do
             keys[#keys + 1] = (cx + dx) .. ":" .. (cy + dy)
         end
     end
@@ -75,9 +76,9 @@ function Map:RebuildSpatialGrid(mapID)
     L._mdebug("Map-Spatial", format("Rebuilt grid for zone %s with %d pins", tostring(mapID), pinCount))
 end
 
-function Map:GetNearbyPins(px, py)
+function Map:GetNearbyPins(px, py, range)
     local result = {}
-    local adjacentKeys = GetAdjacentKeys(px, py)
+    local adjacentKeys = GetAdjacentKeys(px, py, range)
     for _, key in ipairs(adjacentKeys) do
         local pins = spatialGrid[key]
         if pins then
@@ -2031,7 +2032,7 @@ function Map:UpdateMinimap()
           end
       end
       
-      pin:Show()
+      pin:Hide()
       
     else
       pin:Hide()
@@ -2040,6 +2041,12 @@ function Map:UpdateMinimap()
   end
   
   self._minimapPinsDirty = true
+  
+  -- Spatial Hashing: Rebuild grid whenever pins change
+  if currentMapID then
+      self:RebuildSpatialGrid(currentMapID)
+  end
+
   if self._mmTicker then
       self._mmInterval = 0 
       if not self._mmTicker:GetScript("OnUpdate") then
@@ -2118,7 +2125,7 @@ function Map:EnsureMinimapTicker()
             
             if not playerMoved and not Map._minimapPinsDirty then
                 
-                 L._mdebug("Map-Ticker", "Player state unchanged. Skipping position recalculation.")
+                 -- L._mdebug("Map-Ticker", "Player state unchanged. Skipping position recalculation.")
                 Map._mmInterval = 0.5
                 Map._playerStateChanged = false
                 return
@@ -2127,23 +2134,27 @@ function Map:EnsureMinimapTicker()
             
             Map._playerStateChanged = true
             Map._minimapPinsDirty = false 
-            Map._mmInterval = 0.016
+            Map._mmInterval = 0.05 
 
             state.c, state.mapID, state.px, state.py, state.facing, state.zoom = c, mapID, px, py, facing, currentZoom
 
             if playerMoved then
-                 L._mdebug(
-                    "Map-Ticker",
-                    string.format("Ticker Position Update: c=%s, mapID=%s. Player at %.4f, %.4f", tostring(c), tostring(mapID), px, py)
-                )
-            else
-                
-                 L._mdebug("Map-Ticker", "Forced ticker update (pins dirty).")
+                 -- L._mdebug("Map-Ticker", string.format("Ticker Pos: %.4f, %.4f", px, py))
             end
 
             local minimapRadius = Minimap:GetViewRadius()
             
-            for _, pin in ipairs(Map._mmPins) do
+            -- FarmHUD Compatibility
+            local farmHudActive = _G.FarmHud and _G.FarmHud:IsShown()
+            local searchRange = farmHudActive and 6 or 2
+            local cullDistance = farmHudActive and (minimapRadius * 10) or (minimapRadius * 1.5)
+            
+            local nearbyPins = Map:GetNearbyPins(px, py, searchRange)
+            
+            -- Track which pins are visible *this frame*
+            local currentFrameVisible = {} 
+
+            for _, pin in ipairs(nearbyPins) do
                 if pin.discovery then 
                     local d = pin.discovery
 
@@ -2156,13 +2167,14 @@ function Map:EnsureMinimapTicker()
                             local result = Astrolabe:PlaceIconOnMinimap(pin, GetCurrentMapContinent(), mapID, d.xy.x, d.xy.y)
                             if result == 0 then
                                 local dist = Astrolabe:GetDistanceToIcon(pin)
-                                if dist and dist > minimapRadius * 1.5 then
+                                if dist and dist > cullDistance then
                                     Astrolabe:RemoveIconFromMinimap(pin)
                                     pin:Hide()
                                 else
                                     if not pin:IsShown() then
                                         pin:Show()
                                     end
+                                    currentFrameVisible[pin] = true -- Mark as visible
                                 end
                             else
                                 Astrolabe:RemoveIconFromMinimap(pin)
@@ -2170,6 +2182,7 @@ function Map:EnsureMinimapTicker()
                             end
                         end
                     else
+                         -- Should not happen if grid is correct, but safe fallback
                         Astrolabe:RemoveIconFromMinimap(pin)
                         pin:Hide()
                     end
@@ -2177,6 +2190,18 @@ function Map:EnsureMinimapTicker()
                     pin:Hide()
                 end
             end
+            
+            -- Cleanup: Hide pins that were visible but are no longer nearby/visible
+            -- This is key to ensuring pins disappear when we walk away from them
+            if Map._visibleMinimapPins then
+                for pin, _ in pairs(Map._visibleMinimapPins) do
+                    if not currentFrameVisible[pin] then
+                        Astrolabe:RemoveIconFromMinimap(pin)
+                        pin:Hide()
+                    end
+                end
+            end
+            Map._visibleMinimapPins = currentFrameVisible
         end
     end)
 end
