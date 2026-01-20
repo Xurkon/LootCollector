@@ -545,13 +545,16 @@ function LootCollector:IsItemCollected(itemID)
     end
     
     local isCollected = false
+    local isCollected = false
     for i = 1, numLines do
         local line = _G["LootCollectorCollectedTooltipTextLeft" .. i]
         if line then
             local text = line:GetText()
-            if text and type(text) == "string" and text == "Collected" then
-                isCollected = true
-                break
+            if text and type(text) == "string" then
+                if string.find(text, "Collected") or string.find(text, "Already Known") or string.find(text, "Already known") then
+                    isCollected = true
+                    break
+                end
             end
         end
     end

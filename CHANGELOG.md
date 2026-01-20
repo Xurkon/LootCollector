@@ -1,3 +1,8 @@
+## LootCollector 0.7.52 - Cleanup Fix
+
+### Bug Fixes
+- **Improved Collected Detection:** Updated the detection logic for collected items (used by `/lccleanup` and map filtering) to handle "Already Known" and other variations of the collected status text, ensuring more items are correctly identified and hidden.
+
 ## LootCollector 0.7.51 - Cleanup Command
 
 ### New Features
