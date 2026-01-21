@@ -6,7 +6,7 @@
 [![Patreon](https://img.shields.io/badge/Patreon-Support-orange?style=for-the-badge&logo=patreon)](https://patreon.com/Xurkon)
 [![PayPal](https://img.shields.io/badge/PayPal-Donate-blue?style=for-the-badge&logo=paypal)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kancerous@gmail.com)
 
-![Version](https://img.shields.io/badge/version-v0.7.42-blue)
+![Version](https://img.shields.io/badge/version-v0.7.54-blue)
 ![WoW Version](https://img.shields.io/badge/WoW-3.3.5a-orange)
 ![Project Ascension](https://img.shields.io/badge/Project-Ascension-purple)
 
@@ -53,6 +53,7 @@ Screenhots from 0.5.90-alpha:
 ### 3. Powerful Filtering & Data Management
 *   **Advanced Filtering:** The filter menu gives you full control over what you see.
     *   Hide items by status (`Faded`, `Stale`, `Unconfirmed`) or those you've already looted.
+    *   **Hide Collected Appearances:** Filter out items whose appearances are already in your wardrobe collection.
     *   Filter by **Usable by Class** or specific **Equipment Slot** (e.g., only Trinkets).
 *   **"Show to..." Player Sharing:** Right-click a map pin and select "Show to..." to send a discovery's location directly to another player via whisper. They'll get a prompt to view it on their map.
 *   **Import/Export:** A new "Import from File" method allows you to safely import massive community databases without freezing your client.
@@ -115,12 +116,9 @@ Additionally, old databases from before version 0.5.1 will likely not work.
 
 See the full [CHANGELOG.md](CHANGELOG.md) for a complete version history.
 
-### Recent Changes (v0.7.42)
+### Recent Changes (v0.7.54)
 
-- **Toast.lua:** Global function caching, reusable tables, dispatcher idle/wake optimization
-- **Map.lua:** UpdateTicker idle/wake optimization with `wakeDataChangeHandler()` helper
-- **Core.lua & DBSync.lua:** Wake calls at all `L.DataHasChanged = true` locations
-- **v0.7.41:** Fixed tooltip visibility (strata adjustments for pins, overlays, context menus)
+- **Hide Collected Appearances Filter:** Added a new filter option to hide items whose appearances are already in your wardrobe collection, using the Ascension appearance collection APIs.
 
 ## Contributing
 

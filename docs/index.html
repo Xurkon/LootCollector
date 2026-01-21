@@ -226,7 +226,7 @@
                     alt="PayPal"></a>
         </div>
         <div style="margin-top: 10px;">
-            <img src="https://img.shields.io/badge/version-v0.7.48-blue" alt="Version">
+            <img src="https://img.shields.io/badge/version-v0.7.54-blue" alt="Version">
             <img src="https://img.shields.io/badge/WoW-3.3.5a-orange" alt="WoW Version">
             <img src="https://img.shields.io/badge/Project-Ascension-purple" alt="Project Ascension">
         </div>
@@ -547,7 +547,19 @@
             <h2>Changelog</h2>
 
             <div class="optimization-card">
-                <h4>v0.7.48 - Viewer Crash Fix & Gladdy Compatibility</h4>
+                <h4>v0.7.54 - Hide Collected Appearances Filter</h4>
+                <ul>
+                    <li>Added new <code>Hide Collected Appearances</code> filter to Hide Options submenu</li>
+                    <li>Filters discoveries for items with appearances already in your wardrobe</li>
+                    <li>Uses Ascension's <code>C_Appearance.GetItemAppearanceID</code> and
+                        <code>C_AppearanceCollection.IsAppearanceCollected</code> APIs
+                    </li>
+                    <li>Includes 5-minute appearance cache for performance optimization</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>v0.7.48 - Viewer Crash Fix &amp; Gladdy Compatibility</h4>
                 <ul>
                     <li>Fixed client crash when selecting "Special Vendors" (MSv) in Viewer</li>
                     <li>Resolved settings persistence issues caused by crashes</li>

@@ -1,3 +1,8 @@
+## LootCollector 0.7.54 - Hide Collected Appearances Filter
+
+### New Features
+- **Hide Collected Appearances Filter:** Added a new filter option in the Hide Options submenu that allows you to hide discoveries for items whose appearances you have already collected. This uses the Ascension `C_Appearance.GetItemAppearanceID` and `C_AppearanceCollection.IsAppearanceCollected` APIs to check your wardrobe collection.
+
 ## LootCollector 0.7.53 - Regression Fix
 
 ### Bug Fixes
