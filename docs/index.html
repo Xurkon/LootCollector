@@ -295,11 +295,10 @@
                 Coroutine-based batch processing prevents UI freezing by yielding after each chunk.
             </p>
 
-            <h3>Known Issues</h3>
-            <p><strong>Spatial Hashing:</strong> Implementation achieved 93% reduction in pins processed (430 → 47) but
-                was <strong>reverted</strong>
-                due to pin rotation/visibility bugs on minimap/FarmHud. Needs more careful integration into the existing
-                <code>_mmTicker</code> OnUpdate loop.
+            <h3>Implementation Notes</h3>
+            <p><strong>Spatial Hashing:</strong> Successfully implemented for minimap optimization, achieving 93%
+                reduction in pins processed (430 → 47). This significantly improves performance in zones with many
+                discoveries by only processing pins in the player's immediate vicinity.
             </p>
         </div>
 
@@ -538,7 +537,8 @@
                         on scanning item tooltips for "Already Known" text, which often failed if the client hadn't
                         finished loading item data (returning empty tooltips).</li>
                     <li><strong>Solution:</strong> Switched to using the private
-                        <code>C_MysticEnchant.QueryEnchants</code> API.</li>
+                        <code>C_MysticEnchant.QueryEnchants</code> API.
+                    </li>
                     <li><strong>Implementation:</strong>
                         <ul>
                             <li>On login (and every 5 minutes), the addon queries the server for a full list of known
@@ -666,7 +666,7 @@
 
             <div class="optimization-card">
                 <h4>Spatial Hashing for Minimap Pins <span
-                        style="background: #f44336; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">REVERTED</span>
+                        style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 8px;">IMPLEMENTED</span>
                 </h4>
                 <p style="color: var(--text-secondary); margin-bottom: 10px;"><strong>Benefit:</strong> Faster distance
                     calculations when many pins are visible. Currently O(n) for each update, could be O(1) average.</p>
