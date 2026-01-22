@@ -559,6 +559,21 @@
             </div>
 
             <div class="optimization-card">
+                <h4>v0.7.54 - Mystic Enchant Filter Fix</h4>
+                <ul>
+                    <li><strong>Problem:</strong> "Hide Looted" filter was flaky for Mystic Enchants because it relied on scanning item tooltips for "Already Known" text, which often failed if the client hadn't finished loading item data (returning empty tooltips).</li>
+                    <li><strong>Solution:</strong> Switched to using the private <code>C_MysticEnchant.QueryEnchants</code> API.</li>
+                    <li><strong>Implementation:</strong> 
+                        <ul>
+                            <li>On login (and every 5 minutes), the addon queries the server for a full list of known enchants.</li>
+                            <li>These IDs are bulk-loaded into the <code>collectedCache</code>.</li>
+                            <li>The filter now checks this cache directly, bypassing tooltip scanning entirely for known enchants.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
                 <h4>v0.7.48 - Viewer Crash Fix &amp; Gladdy Compatibility</h4>
                 <ul>
                     <li>Fixed client crash when selecting "Special Vendors" (MSv) in Viewer</li>

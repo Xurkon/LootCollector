@@ -520,12 +520,44 @@ local function StripColors(text)
     return text
 end
 
+local enchantCacheInitialized = false
+local enchantCacheLastCheck = 0
+
 function LootCollector:IsItemCollected(itemID)
     if not itemID or itemID == 0 then return false end
     
     local now = GetTime()
+
+    -- [NEW] Bulk Load Account-Wide Mystic Enchants via API
+    -- We do this once every 5 minutes (or on first check) to ensure we have the latest account data.
+    if C_MysticEnchant and C_MysticEnchant.QueryEnchants then
+        if (not enchantCacheInitialized) or (now - enchantCacheLastCheck > CACHE_DURATION) then
+            -- Query ALL enchants (limit 9999)
+            local list = C_MysticEnchant.QueryEnchants(9999, 1, "", {})
+            if list then
+                for _, enchant in pairs(list) do
+                     if enchant.Known and enchant.ItemID then
+                        collectedCache[enchant.ItemID] = true
+                        collectedCacheTime[enchant.ItemID] = now
+                     end
+                end
+                enchantCacheInitialized = true
+                enchantCacheLastCheck = now
+            end
+        end
+    end
+
     if collectedCacheTime[itemID] and (now - collectedCacheTime[itemID]) < CACHE_DURATION then
+        -- Only trust the cache if it's TRUE (found) or if we are sure it wasn't a load failure.
+        -- For now, simple time-based cache is fine, provided we don't cache failures prematurely.
         return collectedCache[itemID]
+    end
+    
+    -- [CRITICAL FIX] Check if Game Client has loaded the item yet.
+    -- If not, return false but DO NOT CACHE it. retry next frame.
+    local itemName = GetItemInfo(itemID)
+    if not itemName then
+        return false
     end
     
     local tooltip = _G["LootCollectorCollectedTooltip"]
@@ -541,20 +573,21 @@ function LootCollector:IsItemCollected(itemID)
     end)
     
     if not success then
-        collectedCache[itemID] = false
-        collectedCacheTime[itemID] = now
+        -- Hyperlink failed (item probably not cached), retry later
         return false
     end
     
     local numLines = tooltip:NumLines()
     if numLines == 0 then
-        collectedCache[itemID] = false
-        collectedCacheTime[itemID] = now
+        -- Empty tooltip (item data missing), retry later
         return false
     end
     
     local isCollected = false
-    for i = 1, numLines do
+    -- Optimization: Only scan header and first few lines where "Collected" usually appears
+    local scanDepth = math.min(numLines, 10) 
+    
+    for i = 1, scanDepth do
         local line = _G["LootCollectorCollectedTooltipTextLeft" .. i]
         if line then
             local text = line:GetText()
@@ -571,8 +604,16 @@ function LootCollector:IsItemCollected(itemID)
     
     tooltip:Hide()
     
-    collectedCache[itemID] = isCollected
-    collectedCacheTime[itemID] = now
+    if isCollected then
+        -- If we found it, cache it forever (or for duration). Collection status rarely reverts.
+        collectedCache[itemID] = true
+        collectedCacheTime[itemID] = now
+    else
+        -- If we didn't find it, but we verified the item IS loaded (GetItemInfo passed),
+        -- then it's genuinely not collected. We can cache this 'false' result safely.
+        collectedCache[itemID] = false
+        collectedCacheTime[itemID] = now
+    end
     
     return isCollected
 end

@@ -119,6 +119,7 @@ See the full [CHANGELOG.md](CHANGELOG.md) for a complete version history.
 ### Recent Changes (v0.7.54)
 
 - **Hide Collected Appearances Filter:** Added a new filter option to hide items whose appearances are already in your wardrobe collection, using the Ascension appearance collection APIs.
+- **Fixed Mystic Enchant Filtering:** Resolved persistent issues with "Hide Looted" for Mystic Enchants by implementing a direct API check (`C_MysticEnchant`) instead of relying on unreliable tooltips.
 
 ## Contributing
 

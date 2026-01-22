@@ -2,6 +2,7 @@
 
 ### New Features
 - **Hide Collected Appearances Filter:** Added a new filter option in the Hide Options submenu that allows you to hide discoveries for items whose appearances you have already collected. This uses the Ascension `C_Appearance.GetItemAppearanceID` and `C_AppearanceCollection.IsAppearanceCollected` APIs to check your wardrobe collection.
+- **Fixed Mystic Enchant Filtering:** Fixed an issue where the "Hide Looted" filter would not correctly hide collected Mystic Enchants due to tooltip loading delays. Implemented a robust account-wide check using the `C_MysticEnchant.QueryEnchants` API to bulk-cache known enchants.
 
 ## LootCollector 0.7.53 - Regression Fix
 
