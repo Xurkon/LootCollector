@@ -240,33 +240,6 @@
         </div>
 
         <div class="section">
-            <h2>Version 0.7.48 - Viewer Crash Fixes</h2>
-
-            <div class="optimization-card">
-                <h4>Modules/Viewer.lua - Crash Fix</h4>
-                <ul>
-                    <li>Fixed <code>msv</code> (Mystic Scroll Vendor) key missing from <code>columnFilters</code> table
-                    </li>
-                    <li>Prevented nil index error when accessing <code>columnFilters["msv"]["slot"]</code></li>
-                </ul>
-            </div>
-
-            <div class="optimization-card">
-                <h4>Settings Persistence Integration</h4>
-                <ul>
-                    <li>Resolved issue where settings failed to save due to client crash on exit</li>
-                    <li>Fixed "Gladdy First Run" loop caused by the crash preventing SavedVariables update</li>
-                </ul>
-            </div>
-
-            <h3>Technical Details</h3>
-            <p>The "Special Vendors" filter button sets <code>self.currentFilter = "msv"</code>. The update loop then
-                accesses <code>self.columnFilters[self.currentFilter]</code>. Without the <code>msv</code> key
-                initialized, this returns nil, causing a crash. Adding the initialization table fixes the crash and
-                allows the client to exit cleanly, saving addon settings.</p>
-        </div>
-
-        <div class="section">
             <h2>Version 0.7.46 - Performance Optimizations Phase 3</h2>
 
             <div class="optimization-card">
@@ -561,13 +534,18 @@
             <div class="optimization-card">
                 <h4>v0.7.54 - Mystic Enchant Filter Fix</h4>
                 <ul>
-                    <li><strong>Problem:</strong> "Hide Looted" filter was flaky for Mystic Enchants because it relied on scanning item tooltips for "Already Known" text, which often failed if the client hadn't finished loading item data (returning empty tooltips).</li>
-                    <li><strong>Solution:</strong> Switched to using the private <code>C_MysticEnchant.QueryEnchants</code> API.</li>
-                    <li><strong>Implementation:</strong> 
+                    <li><strong>Problem:</strong> "Hide Looted" filter was flaky for Mystic Enchants because it relied
+                        on scanning item tooltips for "Already Known" text, which often failed if the client hadn't
+                        finished loading item data (returning empty tooltips).</li>
+                    <li><strong>Solution:</strong> Switched to using the private
+                        <code>C_MysticEnchant.QueryEnchants</code> API.</li>
+                    <li><strong>Implementation:</strong>
                         <ul>
-                            <li>On login (and every 5 minutes), the addon queries the server for a full list of known enchants.</li>
+                            <li>On login (and every 5 minutes), the addon queries the server for a full list of known
+                                enchants.</li>
                             <li>These IDs are bulk-loaded into the <code>collectedCache</code>.</li>
-                            <li>The filter now checks this cache directly, bypassing tooltip scanning entirely for known enchants.</li>
+                            <li>The filter now checks this cache directly, bypassing tooltip scanning entirely for known
+                                enchants.</li>
                         </ul>
                     </li>
                 </ul>
