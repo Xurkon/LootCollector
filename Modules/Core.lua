@@ -1489,6 +1489,11 @@ end
 local function SafeCacheItemRequest(itemID)
     GetItemInfo("item:"..tostring(itemID))
     
+    if L:IsFreePickRealm() then
+        Core:UpdateItemRecordFromCache(itemID)
+        return
+    end
+    
     local ok, err = pcall(function()
         itemCacheTooltip:SetHyperlink("item:"..itemID)
         itemCacheTooltip:Hide()
@@ -1882,8 +1887,10 @@ function Core:Qualifies(linkOrQuality)
     end
 
     local function tipHas(needle)
+        if L:IsFreePickRealm() then return false end
         self._scanTip:ClearLines()
-        self._scanTip:SetHyperlink(link)
+        local ok = pcall(function() self._scanTip:SetHyperlink(link) end)
+        if not ok then return false end
         for i = 2, 5 do
             local fs = _G[SCAN_TIP_NAME .. "TextLeft" .. i]
             local text = fs and fs:GetText()

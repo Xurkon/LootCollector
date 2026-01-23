@@ -1,3 +1,90 @@
+## LootCollector 0.7.57 - Comprehensive Free-Pick Realm Fix
+
+### Bug Fixes
+
+- **Added Global Realm Detection:** Added `LootCollector:IsFreePickRealm()` and `LootCollector:SafeSetHyperlink()` wrapper functions for all modules to use
+- **Fixed Core.lua Crashes:** Patched `SafeCacheItemRequest()` and `tipHas()` functions to skip SetHyperlink calls on Free-Pick realms
+- **Affected Functions:**
+  - `Core.lua:SafeCacheItemRequest()` - Item caching
+  - `Core.lua:Qualifies():tipHas()` - Worldforged detection
+
+---
+
+## LootCollector 0.7.56 - Free-Pick Realm Crash Fix
+
+### Bug Fixes
+
+- **Fixed ClassInfoUtil Crash on Free-Pick Realms**
+  - **Root Cause:** On Area 52 and other Free-Pick realms, players have no traditional class. When `IsItemCollected()` calls `tooltip:SetHyperlink()`, it triggers Ascension's modified `GameTooltip_GetEnchantRequirements()` which calls `ClassInfoUtil.GetSpecName(class, spec)` with `class = nil`, causing a Lua error.
+  - **Stack Trace:** `SetHyperlink` → `GameTooltip.lua:444` → `GameTooltip_GetEnchantRequirements` → `ClassInfoUtil.lua:144`
+  - **Fix Location:** `LootCollector.lua:IsItemCollected()` (lines 556-565)
+  - **Solution:** Added realm detection before tooltip scanning:
+    ```lua
+    local realmName = GetRealmName() or ""
+    local isFreePickRealm = realmName:find("Free%-Pick") or realmName:find("Area 52")
+    if isFreePickRealm then
+        return collectedCache[itemID] or false
+    end
+    ```
+  - **Trade-off:** On Free-Pick realms, "Hide Looted" filter only works for Mystic Enchants (via `C_MysticEnchant.QueryEnchants` API). Worldforged tooltip scanning is bypassed.
+
+---
+
+## LootCollector 0.7.55 - Multi-Realm Database Isolation
+
+### Architecture: Realm Buckets
+
+Restructured the database to isolate discoveries per-realm, preventing data mixing between servers.
+
+**Database Schema:**
+```lua
+LootCollectorDB_Asc.global.realms = {
+    ["Area 52 - Free-Pick"] = {
+        discoveries = { [guid] = {...}, ... },
+        blackmarketVendors = { [guid] = {...}, ... },
+    },
+    ["Bronzebeard - Warcraft Reborn"] = { ... },
+    ["Elune - Seasonal"] = { ... },
+}
+```
+
+**Key Functions:**
+- `GetActiveRealmKey()` - Returns `GetRealmName()` as the bucket key
+- `ActivateRealmBucket()` - Creates bucket on login, migrates legacy global data
+- `GetDiscoveriesDB()` / `GetVendorsDB()` - Return only current realm's data
+
+### Cross-Realm Import Disabled
+
+- **File:** `Modules/ImportExport.lua` (line 497-499)
+- **Change:** `isAllowedCrossRealm()` now always returns `false`
+- **Rationale:** Each server has different spawn locations; sharing data between realms causes confusion
+
+**Before:**
+```lua
+local function isAllowedCrossRealm(a, b)
+    if (a == "Bronzebeard..." and b == "Malfurion...") then return true end
+    ...
+end
+```
+
+**After:**
+```lua
+local function isAllowedCrossRealm(a, b)
+    return false
+end
+```
+
+### Supported Realms
+
+All Ascension realms with static world object spawns are supported:
+- Area 52 (Free-Pick)
+- Bronzebeard (Warcraft Reborn)
+- Elune (Seasonal)
+- Grizzly Hills
+- Rexxar
+
+---
+
 ## LootCollector 0.7.54 - Hide Collected Appearances Filter
 
 ### New Features

@@ -85,6 +85,23 @@ function LootCollector:ProcessInChunks(items, processor, chunkSize, onComplete)
     end)
 end
 
+local _isFreePickRealm = nil
+function LootCollector:IsFreePickRealm()
+    if _isFreePickRealm ~= nil then return _isFreePickRealm end
+    local realmName = GetRealmName() or ""
+    _isFreePickRealm = (realmName:find("Free%-Pick") ~= nil) or (realmName:find("Area 52") ~= nil)
+    return _isFreePickRealm
+end
+
+function LootCollector:SafeSetHyperlink(tooltip, hyperlink)
+    if not tooltip or not hyperlink then return false end
+    if self:IsFreePickRealm() then return false end
+    local success = pcall(function()
+        tooltip:SetHyperlink(hyperlink)
+    end)
+    return success
+end
+
 LootCollector.sourceSpecificIgnoreList = {
     ["Mystic Scroll: White Walker"] = true,
     ["Mystic Scroll: Powder Mage"] = true,
@@ -528,11 +545,8 @@ function LootCollector:IsItemCollected(itemID)
     
     local now = GetTime()
 
-    -- [NEW] Bulk Load Account-Wide Mystic Enchants via API
-    -- We do this once every 5 minutes (or on first check) to ensure we have the latest account data.
     if C_MysticEnchant and C_MysticEnchant.QueryEnchants then
         if (not enchantCacheInitialized) or (now - enchantCacheLastCheck > CACHE_DURATION) then
-            -- Query ALL enchants (limit 9999)
             local list = C_MysticEnchant.QueryEnchants(9999, 1, "", {})
             if list then
                 for _, enchant in pairs(list) do
@@ -548,15 +562,21 @@ function LootCollector:IsItemCollected(itemID)
     end
 
     if collectedCacheTime[itemID] and (now - collectedCacheTime[itemID]) < CACHE_DURATION then
-        -- Only trust the cache if it's TRUE (found) or if we are sure it wasn't a load failure.
-        -- For now, simple time-based cache is fine, provided we don't cache failures prematurely.
         return collectedCache[itemID]
     end
     
-    -- [CRITICAL FIX] Check if Game Client has loaded the item yet.
-    -- If not, return false but DO NOT CACHE it. retry next frame.
     local itemName = GetItemInfo(itemID)
     if not itemName then
+        return false
+    end
+    
+    local realmName = GetRealmName() or ""
+    local isFreePickRealm = realmName:find("Free%-Pick") or realmName:find("Area 52")
+    
+    if isFreePickRealm then
+        if collectedCache[itemID] ~= nil then
+            return collectedCache[itemID]
+        end
         return false
     end
     
@@ -573,18 +593,19 @@ function LootCollector:IsItemCollected(itemID)
     end)
     
     if not success then
-        -- Hyperlink failed (item probably not cached), retry later
+        tooltip:Hide()
+        if collectedCache[itemID] ~= nil then
+            return collectedCache[itemID]
+        end
         return false
     end
     
     local numLines = tooltip:NumLines()
     if numLines == 0 then
-        -- Empty tooltip (item data missing), retry later
         return false
     end
     
     local isCollected = false
-    -- Optimization: Only scan header and first few lines where "Collected" usually appears
     local scanDepth = math.min(numLines, 10) 
     
     for i = 1, scanDepth do
@@ -593,7 +614,6 @@ function LootCollector:IsItemCollected(itemID)
             local text = line:GetText()
             if text and type(text) == "string" then
                 local cleanText = StripColors(text)
-                -- STRICT MATCHING to avoid matching "LootCollector" addon name or "Not Collected"
                 if cleanText == "Collected" or cleanText == "Already Known" or cleanText == "Already known" then
                     isCollected = true
                     break
@@ -605,12 +625,9 @@ function LootCollector:IsItemCollected(itemID)
     tooltip:Hide()
     
     if isCollected then
-        -- If we found it, cache it forever (or for duration). Collection status rarely reverts.
         collectedCache[itemID] = true
         collectedCacheTime[itemID] = now
     else
-        -- If we didn't find it, but we verified the item IS loaded (GetItemInfo passed),
-        -- then it's genuinely not collected. We can cache this 'false' result safely.
         collectedCache[itemID] = false
         collectedCacheTime[itemID] = now
     end

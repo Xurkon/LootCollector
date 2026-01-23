@@ -1,4 +1,4 @@
-# LootCollector for Project Ascension (Bronzebeard)
+# LootCollector for Project Ascension
 
 [![Documentation](https://img.shields.io/badge/📖_Docs-GitHub_Pages-2ea44f?style=for-the-badge)](https://xurkon.github.io/LootCollector/)
 ![Total Downloads](https://img.shields.io/github/downloads/Xurkon/LootCollector/total?style=for-the-badge&label=TOTAL%20DOWNLOADS&color=e67e22)
@@ -6,14 +6,14 @@
 [![Patreon](https://img.shields.io/badge/Patreon-Support-orange?style=for-the-badge&logo=patreon)](https://patreon.com/Xurkon)
 [![PayPal](https://img.shields.io/badge/PayPal-Donate-blue?style=for-the-badge&logo=paypal)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kancerous@gmail.com)
 
-![Version](https://img.shields.io/badge/version-v0.7.54-blue)
+![Version](https://img.shields.io/badge/version-v0.7.57-blue)
 ![WoW Version](https://img.shields.io/badge/WoW-3.3.5a-orange)
 ![Project Ascension](https://img.shields.io/badge/Project-Ascension-purple)
 
 > [!IMPORTANT]  
-> **Compatibility Notice:** This addon has been developed and tested specifically for the **Bronzebeard** realm of Project Ascension. Its data-sharing model is designed for static world object spawns (e.g., clickable chests/nodes). On realms where items like Mystic Scrolls drop from random mobs, sharing coordinates is not useful, and this addon may not function as intended.
+> **Realm Support:** This addon works on all Ascension realms with static world object spawns (Area52, Bronzebeard, Elune, Grizzly Hills, Rexxar). Each server maintains its own separate database.
 
-**LootCollector** is a community-driven discovery and navigation tool for the Bronzebeard realm of Project Ascension. It creates a live, shared, and now self-healing database of hand-placed world objects-such as Worldforged gear-by allowing all users to automatically share their findings and report when items are gone.
+**LootCollector** is a community-driven discovery and navigation tool for Project Ascension. It creates a live, shared, and self-healing database of hand-placed world objects-such as Worldforged gear-by allowing all users to automatically share their findings and report when items are gone.
 
 Screenhots from live Brozebeard few fours after launch (0.4.2-alpha):
 ![image](https://i.imgur.com/cfYL2fM.jpeg)
@@ -116,10 +116,26 @@ Additionally, old databases from before version 0.5.1 will likely not work.
 
 See the full [CHANGELOG.md](CHANGELOG.md) for a complete version history.
 
-### Recent Changes (v0.7.54)
+### Recent Changes
 
-- **Hide Collected Appearances Filter:** Added a new filter option to hide items whose appearances are already in your wardrobe collection, using the Ascension appearance collection APIs.
-- **Fixed Mystic Enchant Filtering:** Resolved persistent issues with "Hide Looted" for Mystic Enchants by implementing a direct API check (`C_MysticEnchant`) instead of relying on unreliable tooltips.
+#### v0.7.57 - Comprehensive Free-Pick Realm Fix
+- **Safe Tooltip Wrappers:** Added `LootCollector:SafeSetHyperlink` to prevent client crashes during item data lookups.
+- **Free-Pick Optimization:** Automatically skips problematic tooltip scanning on realms like Area 52 (where player class metadata is handled differently).
+- **Core Stability:** Patched `SafeCacheItemRequest` and `Qualifies` functions in the Core module to use safe execution paths.
+
+#### v0.7.56 - Free-Pick Realm Crash Fix
+- **Fixed `ClassInfoUtil.GetSpecName()` crash** on Area 52 and other Free-Pick realms where players have no traditional class
+- Implemented realm detection to skip tooltip scanning on Free-Pick realms
+- Falls back to `C_MysticEnchant.QueryEnchants` API cache for collected status
+
+#### v0.7.55 - Multi-Realm Database Isolation
+- **Realm Buckets:** Database restructured to store discoveries per-realm (`db.global.realms[realmName]`)
+- **Cross-realm imports disabled:** `isAllowedCrossRealm()` returns `false` to prevent data mixing
+- **Supported:** Area 52, Bronzebeard, Elune, Grizzly Hills, Rexxar
+
+#### v0.7.54 - Hide Collected Appearances Filter
+- Added filter to hide items with collected appearances via `C_Appearance.GetItemAppearanceID`
+- Fixed Mystic Enchant filtering via `C_MysticEnchant.QueryEnchants` bulk API
 
 ## Contributing
 

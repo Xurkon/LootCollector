@@ -226,7 +226,7 @@
                     alt="PayPal"></a>
         </div>
         <div style="margin-top: 10px;">
-            <img src="https://img.shields.io/badge/version-v0.7.54-blue" alt="Version">
+            <img src="https://img.shields.io/badge/version-v0.7.57-blue" alt="Version">
             <img src="https://img.shields.io/badge/WoW-3.3.5a-orange" alt="WoW Version">
             <img src="https://img.shields.io/badge/Project-Ascension-purple" alt="Project Ascension">
         </div>
@@ -519,6 +519,76 @@
             <h2>Changelog</h2>
 
             <div class="optimization-card">
+                <h4>v0.7.57 - Comprehensive Free-Pick Realm Fix</h4>
+                <ul>
+                    <li><strong>Global Safe Wrapper:</strong> Implemented
+                        <code>LootCollector:SafeSetHyperlink(tooltip, hyperlink)</code> as a centralized safe-execution
+                        point for all addon modules, preventing unhandled exceptions in the game's C code.</li>
+                    <li><strong>Free-Pick Detection:</strong> Added <code>LootCollector:IsFreePickRealm()</code> using
+                        cached detection logic to bypass problematic tooltip rendering on realms like Area 52.</li>
+                    <li><strong>Core Stablity:</strong> Patched critical paths in <code>Modules/Core.lua</code>:
+                        <ul>
+                            <li><code>SafeCacheItemRequest()</code> now bypasses <code>SetHyperlink</code> on Free-Pick
+                                realms while maintaining cache availability.</li>
+                            <li>The <code>tipHas()</code> helper in <code>Qualifies()</code> now uses safe detection
+                                logic to prevent Worldforged scanning crashes.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>v0.7.56 - Free-Pick Realm Crash Fix</h4>
+                <ul>
+                    <li><strong>Root Cause:</strong> On Area 52 and other Free-Pick realms, players have no traditional
+                        class. When <code>IsItemCollected()</code> calls <code>tooltip:SetHyperlink()</code>, it
+                        triggers Ascension's <code>GameTooltip_GetEnchantRequirements()</code> which calls
+                        <code>ClassInfoUtil.GetSpecName(class, spec)</code> with <code>class = nil</code>.
+                    </li>
+                    <li><strong>Stack Trace:</strong> <code>SetHyperlink</code> → <code>GameTooltip.lua:444</code> →
+                        <code>GameTooltip_GetEnchantRequirements</code> → <code>ClassInfoUtil.lua:144</code>
+                    </li>
+                    <li><strong>Fix:</strong> Added realm detection in <code>LootCollector.lua:IsItemCollected()</code>:
+                        <pre
+                            style="background: var(--code-bg); padding: 10px; border-radius: 4px; margin-top: 8px; overflow-x: auto;"><code>local realmName = GetRealmName() or ""
+local isFreePickRealm = realmName:find("Free%-Pick") or realmName:find("Area 52")
+if isFreePickRealm then
+    return collectedCache[itemID] or false
+end</code></pre>
+                    </li>
+                    <li><strong>Trade-off:</strong> On Free-Pick realms, "Hide Looted" only works for Mystic Enchants
+                        (via <code>C_MysticEnchant.QueryEnchants</code>).</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
+                <h4>v0.7.55 - Multi-Realm Database Isolation</h4>
+                <ul>
+                    <li><strong>Architecture:</strong> Restructured database to use Realm Buckets for per-server
+                        isolation.</li>
+                    <li><strong>Schema:</strong>
+                        <pre
+                            style="background: var(--code-bg); padding: 10px; border-radius: 4px; margin-top: 8px; overflow-x: auto;"><code>LootCollectorDB_Asc.global.realms = {
+    ["Area 52 - Free-Pick"] = { discoveries = {}, blackmarketVendors = {} },
+    ["Bronzebeard - Warcraft Reborn"] = { ... },
+}</code></pre>
+                    </li>
+                    <li><strong>Key Functions:</strong>
+                        <ul>
+                            <li><code>GetActiveRealmKey()</code> - Returns <code>GetRealmName()</code> as bucket key
+                            </li>
+                            <li><code>ActivateRealmBucket()</code> - Creates bucket on login, migrates legacy data</li>
+                            <li><code>GetDiscoveriesDB()</code> - Returns only current realm's discoveries</li>
+                        </ul>
+                    </li>
+                    <li><strong>Cross-Realm Imports:</strong> Disabled. <code>isAllowedCrossRealm()</code> returns
+                        <code>false</code>.
+                    </li>
+                    <li><strong>Supported Realms:</strong> Area 52, Bronzebeard, Elune, Grizzly Hills, Rexxar</li>
+                </ul>
+            </div>
+
+            <div class="optimization-card">
                 <h4>v0.7.54 - Hide Collected Appearances Filter</h4>
                 <ul>
                     <li>Added new <code>Hide Collected Appearances</code> filter to Hide Options submenu</li>
@@ -793,7 +863,7 @@ end</code></pre>
     </div>
 
     <footer>
-        <p>LootCollector for Project Ascension (Bronzebeard)</p>
+        <p>LootCollector for Project Ascension</p>
     </footer>
 </body>
 

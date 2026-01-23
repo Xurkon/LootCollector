@@ -1,10 +1,10 @@
 ## Interface: 30300
-## Title: |ce5cc80ffLootCollector|r |cffff5555[alpha.0.7.54]
-## Notes: Community-driven addon enables players to collaboratively discover and share locations of lootable objects, enriching exploration and boosting gameplay efficiency. Designed for Ascension.Bronzebeard by Skulltrail. |cffffffffContributors:|r |cffffff00Deidre, Rhenyra, Morty, Markosz, Bandit Tech, xan, Stilnight|r. |cffffffffAlpha Top Collectors:|r |cffffff00Morty, Laya, Brokenheart, Mie, Rhen, Aaltrix, Insanestar, Harrydn, Blutact|r.
+## Title: |ce5cc80ffLootCollector|r |cffff5555[alpha.0.7.57]
+## Notes: Community-driven addon enables players to collaboratively discover and share locations of lootable objects. Supports all Ascension realms with static spawns (Area52, Bronzebeard, Elune, Grizzly Hills, Rexxar). Each server has its own database. |cffffffffBy Skulltrail. Contributors:|r |cffffff00Deidre, Rhenyra, Morty, Markosz, Bandit Tech, xan, Stilnight, Xurkon|r.
 ## Author: Skulltrail
 ## Contributors: Deidre, Rhenyra, Morty, Markosz, Bandit Tech, xan, Stilnight, Xurkon
 ## AlphaTopCollectors: Morty, Laya, Brokenheart, Mie, Rhen, Aaltrix, Insanestar, Harrydn, Blutact
-## Version: 0.7.54
+## Version: 0.7.57
 ## SavedVariables: LootCollectorDB_Asc
 ## OptionalDeps: Ace3, TomTom, AtlasLoot_Cache
 
